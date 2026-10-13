@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmartG Nível de Água</title>
+<style>
+  :root {
+    --bg: #f4f6f9; --surface: #ffffff; --surface-2: #eef1f5; --border: #dde2ea;
+    --text: #17202c; --muted: #5d6878; --accent: #1f6fd1; --accent-soft: #d8e7fa;
+    --water: #2b8be6; --water-2: #67b2f5; --ok: #1a8a4a; --warn: #b7791f; --danger: #c2372f;
+    --grid: #e3e7ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f141b; --surface: #171e27; --surface-2: #1f2833; --border: #2a3542;
+      --text: #e6ebf2; --muted: #93a0b2; --accent: #5aa2f0; --accent-soft: #1d3350;
+      --water: #3a95ea; --water-2: #7bbcf5; --ok: #43c07a; --warn: #e0a84a; --danger: #ef6a60;
+      --grid: #243040;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f141b; --surface: #171e27; --surface-2: #1f2833; --border: #2a3542;
+    --text: #e6ebf2; --muted: #93a0b2; --accent: #5aa2f0; --accent-soft: #1d3350;
+    --water: #3a95ea; --water-2: #7bbcf5; --ok: #43c07a; --warn: #e0a84a; --danger: #ef6a60;
+    --grid: #243040;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 14px 20px; background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  header h1 { margin: 0; font-size: 18px; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+    background: var(--surface-2); font-size: 12px; color: var(--muted);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+  .dot.off { background: var(--muted); }
+  .hdr-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  button, select, input {
+    font: inherit; color: var(--text); background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px;
+  }
+  button { cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  input[type="number"] { width: 100%; }
+  main {
+    display: grid; gap: 16px; padding: 16px 20px 32px; max-width: 1280px; margin: 0 auto;
+    grid-template-columns: 300px 1fr;
+  }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .card h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .field { display: grid; grid-template-columns: 1fr 110px; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .field label { color: var(--muted); font-size: 13px; }
+  .field.full { grid-template-columns: 1fr; }
+  .hint { color: var(--muted); font-size: 12px; margin: 4px 0 0; }
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+  .kpi .label { color: var(--muted); font-size: 12px; }
+  .kpi .value { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .kpi .unit { font-size: 13px; color: var(--muted); font-weight: 400; margin-left: 2px; }
+  .kpi .foot { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .row2 { display: grid; grid-template-columns: 260px 1fr; gap: 16px; }
+  .tank-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .badge.ok { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+  .badge.warn { background: color-mix(in srgb, var(--warn) 20%, transparent); color: var(--warn); }
+  .badge.danger { background: color-mix(in srgb, var(--danger) 18%, transparent); color: var(--danger); }
+  canvas { width: 100%; display: block; }
+  .chart-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .chart-head h2 { margin: 0; }
+  .legend { display: flex; gap: 12px; font-size: 12px; color: var(--muted); }
+  .legend i { display: inline-block; width: 14px; height: 2px; vertical-align: middle; margin-right: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td { padding: 6px 0; border-bottom: 1px solid var(--border); }
+  td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  .log { max-height: 200px; overflow: auto; font-size: 12px; margin: 0; padding: 0; list-style: none; }
+  .log li { padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+  .log time { color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+  .pump { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; background: transparent; }
+  .seg button.on { background: var(--accent); color: #fff; }
+  .formula { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; background: var(--surface-2); padding: 8px; border-radius: 8px; white-space: pre-wrap; }
+  @media (max-width: 1000px) {
+    main { grid-template-columns: 1fr; }
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 640px) {
+    main, header { padding-left: 16px; padding-right: 16px; }
+    .row2 { grid-template-columns: 1fr; }
+    .kpi .value { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>SmartG · Nível de Água</h1>
+    <div class="sub">Protótipo de dashboard — cálculo de nível, volume e autonomia a partir do sensor</div>
+  </div>
+  <div class="hdr-actions">
+    <span class="status-pill"><span class="dot" id="connDot"></span><span id="connText">Sensor online · simulação</span></span>
+    <button id="btnRun">Pausar</button>
+    <button id="btnTheme" title="Alternar tema">◐</button>
+  </div>
+</header>
+
+<main>
+  <!-- Coluna de configuração -->
+  <div class="col">
+    <section class="card">
+      <h2>Reservatório</h2>
+      <div class="field full">
+        <label for="shape">Formato</label>
+        <select id="shape">
+          <option value="vcyl">Cilíndrico vertical (caixa d'água)</option>
+          <option value="rect">Retangular / cisterna</option>
+          <option value="hcyl">Cilíndrico horizontal (tanque deitado)</option>
+        </select>
+      </div>
+      <div class="field" id="fDiam"><label for="diam">Diâmetro (cm)</label><input type="number" id="diam" value="150" min="1"></div>
+      <div class="field" id="fLen"><label for="len">Comprimento (cm)</label><input type="number" id="len" value="200" min="1"></div>
+      <div class="field" id="fWid"><label for="wid">Largura (cm)</label><input type="number" id="wid" value="150" min="1"></div>
+      <div class="field" id="fHgt"><label for="hgt">Altura útil (cm)</label><input type="number" id="hgt" value="120" min="1"></div>
+      <p class="hint" id="capHint"></p>
+    </section>
+
+    <section class="card">
+      <h2>Sensor SmartG</h2>
+      <div class="field full">
+        <label for="stype">Tipo de medição</label>
+        <select id="stype">
+          <option value="ultra">Ultrassônico (distância até a lâmina)</option>
+          <option value="press">Pressão hidrostática (coluna d'água)</option>
+        </select>
+      </div>
+      <div class="field" id="fOff"><label for="offset">Distância sensor → nível máx. (cm)</label><input type="number" id="offset" value="25" min="0"></div>
+      <div class="field" id="fDead"><label for="dead">Zona morta (cm)</label><input type="number" id="dead" value="20" min="0"></div>
+      <div class="field"><label for="win">Filtro média móvel (amostras)</label><input type="number" id="win" value="5" min="1" max="30"></div>
+      <div class="field"><label for="period">Intervalo de leitura (s)</label><input type="number" id="period" value="2" min="1" max="60"></div>
+      <p class="hint">Na simulação, o tempo corre 60× mais rápido para ver o enchimento/consumo.</p>
+    </section>
+
+    <section class="card">
+      <h2>Alarmes e automação</h2>
+      <div class="field"><label for="lowA">Nível crítico (%)</label><input type="number" id="lowA" value="15" min="0" max="100"></div>
+      <div class="field"><label for="pumpOn">Liga bomba abaixo de (%)</label><input type="number" id="pumpOn" value="30" min="0" max="100"></div>
+      <div class="field"><label for="pumpOff">Desliga bomba acima de (%)</label><input type="number" id="pumpOff" value="90" min="0" max="100"></div>
+      <div class="field"><label for="highA">Transbordo (%)</label><input type="number" id="highA" value="97" min="0" max="100"></div>
+      <div class="field"><label for="pumpQ">Vazão da bomba (L/min)</label><input type="number" id="pumpQ" value="40" min="0"></div>
+    </section>
+  </div>
+
+  <!-- Coluna principal -->
+  <div class="col">
+    <div class="kpis">
+      <div class="kpi"><div class="label">Nível</div><div class="value" id="kPct">–<span class="unit">%</span></div><div class="foot" id="kPctFoot">&nbsp;</div></div>
+      <div class="kpi"><div class="label">Altura da água</div><div class="value" id="kH">–<span class="unit">cm</span></div><div class="foot" id="kDist">&nbsp;</div></div>
+      <div class="kpi"><div class="label">Volume</div><div class="value" id="kVol">–<span class="unit">L</span></div><div class="foot" id="kCap">&nbsp;</div></div>
+      <div class="kpi"><div class="label">Vazão líquida</div><div class="value" id="kFlow">–<span class="unit">L/min</span></div><div class="foot" id="kAuto">&nbsp;</div></div>
+    </div>
+
+    <div class="row2">
+      <section class="card tank-wrap">
+        <h2 style="align-self:flex-start">Reservatório</h2>
+        <svg id="tank" viewBox="0 0 200 260" width="200" height="260" role="img" aria-label="Nível do reservatório"></svg>
+        <span class="badge ok" id="stateBadge">Normal</span>
+      </section>
+
+      <section class="card">
+        <div class="chart-head">
+          <h2>Histórico de nível</h2>
+          <div class="legend">
+            <span><i style="background:var(--water)"></i>Nível (%)</span>
+            <span><i style="background:var(--danger)"></i>Crítico / Transbordo</span>
+            <span><i style="background:var(--warn)"></i>Faixa da bomba</span>
+          </div>
+        </div>
+        <canvas id="chart" height="240"></canvas>
+      </section>
+    </div>
+
+    <div class="row2">
+      <section class="card">
+        <h2>Bomba</h2>
+        <div class="pump" style="margin-bottom:12px">
+          <span style="white-space:nowrap">Estado: <strong id="pumpState">Desligada</strong></span>
+          <div class="seg" id="pumpMode">
+            <button data-m="auto" class="on">Auto</button>
+            <button data-m="on">Ligar</button>
+            <button data-m="off">Desligar</button>
+          </div>
+        </div>
+        <div class="field"><label for="usage">Consumo simulado (L/min)</label><input type="number" id="usage" value="12" min="0"></div>
+        <h2 style="margin-top:16px">Calculadora manual</h2>
+        <div class="field"><label for="manual" id="manualLbl">Leitura do sensor (cm)</label><input type="number" id="manual" value="60"></div>
+        <table id="manualOut"></table>
+      </section>
+
+      <section class="card">
+        <h2>Cálculo aplicado</h2>
+        <div class="formula" id="formula"></div>
+        <h2 style="margin-top:16px">Eventos</h2>
+        <ul class="log" id="log"></ul>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const num = id => parseFloat($(id).value) || 0;
+  const cfgIds = ['shape','diam','len','wid','hgt','stype','offset','dead','win','period','lowA','pumpOn','pumpOff','highA','pumpQ','usage'];
+
+  // ---------- Preferências locais (opcional) ----------
+  try {
+    const saved = JSON.parse(localStorage.getItem('smartg-cfg') || '{}');
+    cfgIds.forEach(k => { if (saved[k] !== undefined) $(k).value = saved[k]; });
+  } catch (e) {}
+  const saveCfg = () => {
+    try { localStorage.setItem('smartg-cfg', JSON.stringify(Object.fromEntries(cfgIds.map(k => [k, $(k).value])))); } catch (e) {}
+  };
+
+  // ---------- Geometria ----------
+  // Volume (L) para uma altura de água h (cm)
+  function volumeAt(h) {
+    const shape = $('shape').value;
+    const H = num('hgt');
+    h = Math.max(0, Math.min(h, shape === 'hcyl' ? num('diam') : H));
+    if (shape === 'vcyl') {
+      const r = num('diam') / 2;
+      return Math.PI * r * r * h / 1000;
+    }
+    if (shape === 'rect') return num('len') * num('wid') * h / 1000;
+    // cilindro horizontal: área do segmento circular × comprimento
+    const r = num('diam') / 2, L = num('len');
+    const area = r * r * Math.acos((r - h) / r) - (r - h) * Math.sqrt(Math.max(0, 2 * r * h - h * h));
+    return area * L / 1000;
+  }
+  const usefulHeight = () => $('shape').value === 'hcyl' ? num('diam') : num('hgt');
+  const capacity = () => volumeAt(usefulHeight());
+
+  // Converte leitura bruta do sensor em altura de água (cm)
+  function heightFromReading(reading) {
+    const H = usefulHeight();
+    let h;
+    if ($('stype').value === 'ultra') {
+      // distância medida do sensor até a superfície; offset = distância do sensor ao nível máximo
+      const d = Math.max(reading, num('dead'));
+      h = H - (d - num('offset'));
+    } else {
+      h = reading; // pressão já convertida em cm de coluna d'água
+    }
+    return Math.max(0, Math.min(H, h));
+  }
+  function readingFromHeight(h) {
+    return $('stype').value === 'ultra' ? usefulHeight() - h + num('offset') : h;
+  }
+
+  // ---------- Estado de simulação ----------
+  let trueH = usefulHeight() * 0.55;
+  let raw = [];          // últimas leituras brutas
+  let history = [];      // {t, pct}
+  let pumpOn = false, pumpMode = 'auto', running = true;
+  let lastVol = null, flowEMA = 0, lastAlarm = 'ok';
+  const SPEED = 60;      // tempo simulado acelerado
+
+  function log(msg, kind) {
+    const li = document.createElement('li');
+    const t = new Date().toLocaleTimeString('pt-BR');
+    li.innerHTML = `<time>${t}</time><span class="badge ${kind || 'ok'}" style="padding:0 6px">${kind === 'danger' ? '!' : kind === 'warn' ? '•' : 'i'}</span><span></span>`;
+    li.lastChild.textContent = msg;
+    $('log').prepend(li);
+    while ($('log').children.length > 40) $('log').lastChild.remove();
+  }
+
+  const fmt = (v, d = 0) => v.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+  function tick() {
+    const dtMin = num('period') * SPEED / 60; // minutos simulados por leitura
+    const cap = capacity();
+    // dinâmica: entrada da bomba – consumo (com variação)
+    const usage = num('usage') * (0.6 + Math.random() * 0.8);
+    const inflow = pumpOn ? num('pumpQ') : 0;
+    const vol = Math.max(0, Math.min(cap, volumeAt(trueH) + (inflow - usage) * dtMin));
+    trueH = heightForVolume(vol);
+
+    // leitura do sensor com ruído (ultrassônico ±0,5 cm, pressão ±0,3 cm)
+    const noise = ($('stype').value === 'ultra' ? 0.5 : 0.3) * (Math.random() * 2 - 1);
+    const reading = readingFromHeight(trueH) + noise;
+    raw.push(reading);
+    const win = Math.max(1, Math.round(num('win')));
+    raw = raw.slice(-win);
+    const filtered = raw.reduce((a, b) => a + b, 0) / raw.length;
+
+    const h = heightFromReading(filtered);
+    const v = volumeAt(h);
+    const pct = cap > 0 ? v / cap * 100 : 0;
+
+    // vazão líquida (L/min simulado) suavizada
+    if (lastVol !== null) flowEMA = 0.7 * flowEMA + 0.3 * ((v - lastVol) / dtMin);
+    lastVol = v;
+
+    controlPump(pct);
+    checkAlarms(pct);
+
+    history.push({ t: Date.now(), pct });
+    if (history.length > 180) history.shift();
+
+    render({ reading: filtered, h, v, pct, cap });
+  }
+
+  function heightForVolume(vol) {
+    // busca binária (serve para qualquer geometria)
+    let lo = 0, hi = usefulHeight();
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2;
+      if (volumeAt(mid) < vol) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  function controlPump(pct) {
+    const prev = pumpOn;
+    if (pumpMode === 'on') pumpOn = true;
+    else if (pumpMode === 'off') pumpOn = false;
+    else {
+      if (pct <= num('pumpOn')) pumpOn = true;
+      if (pct >= num('pumpOff')) pumpOn = false;
+    }
+    if (pct >= num('highA')) pumpOn = false; // proteção contra transbordo
+    if (prev !== pumpOn) log(`Bomba ${pumpOn ? 'ligada' : 'desligada'} em ${fmt(pct, 1)}%`, 'ok');
+  }
+
+  function alarmState(pct) {
+    if (pct <= num('lowA')) return 'low';
+    if (pct >= num('highA')) return 'high';
+    if (pct <= num('pumpOn')) return 'warn';
+    return 'ok';
+  }
+  function checkAlarms(pct) {
+    const s = alarmState(pct);
+    if (s !== lastAlarm) {
+      if (s === 'low') log(`Nível crítico: ${fmt(pct, 1)}%`, 'danger');
+      else if (s === 'high') log(`Risco de transbordo: ${fmt(pct, 1)}%`, 'danger');
+      else if (s === 'warn') log(`Nível baixo: ${fmt(pct, 1)}%`, 'warn');
+      else log(`Nível normalizado: ${fmt(pct, 1)}%`, 'ok');
+      lastAlarm = s;
+    }
+  }
+
+  // ---------- Renderização ----------
+  function render({ reading, h, v, pct, cap }) {
+    $('kPct').innerHTML = `${fmt(pct, 1)}<span class="unit">%</span>`;
+    $('kH').innerHTML = `${fmt(h, 1)}<span class="unit">cm</span>`;
+    $('kVol').innerHTML = `${fmt(v)}<span class="unit">L</span>`;
+    $('kFlow').innerHTML = `${flowEMA >= 0 ? '+' : ''}${fmt(flowEMA, 1)}<span class="unit">L/min</span>`;
+    $('kDist').textContent = $('stype').value === 'ultra' ? `Distância lida: ${fmt(reading, 1)} cm` : `Coluna lida: ${fmt(reading, 1)} cm`;
+    $('kCap').textContent = `de ${fmt(cap)} L de capacidade`;
+
+    let auto = '—';
+    if (flowEMA < -0.05) auto = `Esvazia em ~${fmtDur(v / -flowEMA)}`;
+    else if (flowEMA > 0.05) auto = `Enche em ~${fmtDur((cap - v) / flowEMA)}`;
+    else auto = 'Estável';
+    $('kAuto').textContent = auto;
+
+    const s = alarmState(pct);
+    const map = { ok: ['ok', 'Normal'], warn: ['warn', 'Nível baixo'], low: ['danger', 'Crítico'], high: ['danger', 'Transbordo'] };
+    $('stateBadge').className = 'badge ' + map[s][0];
+    $('stateBadge').textContent = map[s][1];
+    $('kPctFoot').textContent = map[s][1];
+    $('pumpState').textContent = pumpOn ? 'Ligada' : 'Desligada';
+
+    drawTank(pct);
+    drawChart();
+    renderFormula(reading, h, v, cap, pct);
+  }
+
+  function fmtDur(min) {
+    if (!isFinite(min)) return '—';
+    if (min < 60) return `${Math.round(min)} min`;
+    const hrs = min / 60;
+    return hrs < 48 ? `${fmt(hrs, 1)} h` : `${fmt(hrs / 24, 1)} dias`;
+  }
+
+  function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+  function drawTank(pct) {
+    const svg = $('tank');
+    const x = 40, y = 30, w = 120, hgt = 200;
+    const fillH = hgt * pct / 100;
+    const mark = p => y + hgt - hgt * p / 100;
+    const line = (p, color, label) => `
+      <line x1="${x - 6}" x2="${x + w + 6}" y1="${mark(p)}" y2="${mark(p)}" stroke="${color}" stroke-dasharray="4 3" stroke-width="1"/>
+      <text x="${x + w + 10}" y="${mark(p) + 4}" font-size="10" fill="${color}">${label}</text>`;
+    const sensor = $('stype').value === 'ultra'
+      ? `<rect x="${x + w / 2 - 14}" y="${y - 22}" width="28" height="12" rx="3" fill="${css('--accent')}"/>
+         <text x="${x + w / 2}" y="${y - 13}" font-size="8" text-anchor="middle" fill="#fff">SmartG</text>
+         <line x1="${x + w / 2}" x2="${x + w / 2}" y1="${y - 10}" y2="${y + hgt - fillH}" stroke="${css('--accent')}" stroke-dasharray="2 3"/>`
+      : `<rect x="${x + w / 2 - 14}" y="${y + hgt - 14}" width="28" height="12" rx="3" fill="${css('--accent')}"/>
+         <text x="${x + w / 2}" y="${y + hgt - 5}" font-size="8" text-anchor="middle" fill="#fff">SmartG</text>`;
+    svg.innerHTML = `
+      <rect x="${x}" y="${y}" width="${w}" height="${hgt}" rx="8" fill="${css('--surface-2')}" stroke="${css('--border')}" stroke-width="2"/>
+      <clipPath id="clip"><rect x="${x}" y="${y}" width="${w}" height="${hgt}" rx="8"/></clipPath>
+      <g clip-path="url(#clip)">
+        <rect x="${x}" y="${y + hgt - fillH}" width="${w}" height="${fillH}" fill="${css('--water')}" opacity=".85"/>
+        <rect x="${x}" y="${y + hgt - fillH}" width="${w}" height="4" fill="${css('--water-2')}"/>
+      </g>
+      ${line(num('highA'), css('--danger'), num('highA') + '%')}
+      ${line(num('pumpOff'), css('--warn'), num('pumpOff') + '%')}
+      ${line(num('pumpOn'), css('--warn'), num('pumpOn') + '%')}
+      ${line(num('lowA'), css('--danger'), num('lowA') + '%')}
+      ${sensor}
+      <text x="${x + w / 2}" y="${Math.min(y + hgt - fillH + 22, y + hgt - 20)}" font-size="18" font-weight="700" text-anchor="middle" fill="${pct > 12 ? '#fff' : css('--text')}">${fmt(pct, 0)}%</text>`;
+  }
+
+  function drawChart() {
+    const c = $('chart'), ctx = c.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const W = c.clientWidth, H = 240;
+    c.width = W * dpr; c.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    const pad = { l: 34, r: 8, t: 8, b: 20 };
+    const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+    const yv = p => pad.t + ih - ih * p / 100;
+
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.fillStyle = css('--muted'); ctx.strokeStyle = css('--grid'); ctx.lineWidth = 1;
+    for (let p = 0; p <= 100; p += 25) {
+      ctx.beginPath(); ctx.moveTo(pad.l, yv(p)); ctx.lineTo(W - pad.r, yv(p)); ctx.stroke();
+      ctx.fillText(p + '%', 2, yv(p) + 4);
+    }
+    // faixa da bomba
+    ctx.fillStyle = css('--warn'); ctx.globalAlpha = 0.08;
+    ctx.fillRect(pad.l, yv(num('pumpOff')), iw, yv(num('pumpOn')) - yv(num('pumpOff')));
+    ctx.globalAlpha = 1;
+    const hline = (p, color) => { ctx.strokeStyle = color; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(pad.l, yv(p)); ctx.lineTo(W - pad.r, yv(p)); ctx.stroke(); ctx.setLineDash([]); };
+    hline(num('lowA'), css('--danger')); hline(num('highA'), css('--danger'));
+
+    if (history.length < 2) return;
+    const n = 180, xv = i => pad.l + iw * (i + (n - history.length)) / (n - 1);
+    // área
+    ctx.beginPath(); ctx.moveTo(xv(0), yv(0));
+    history.forEach((d, i) => ctx.lineTo(xv(i), yv(d.pct)));
+    ctx.lineTo(xv(history.length - 1), yv(0)); ctx.closePath();
+    ctx.fillStyle = css('--water'); ctx.globalAlpha = 0.12; ctx.fill(); ctx.globalAlpha = 1;
+    // linha
+    ctx.beginPath(); history.forEach((d, i) => i ? ctx.lineTo(xv(i), yv(d.pct)) : ctx.moveTo(xv(i), yv(d.pct)));
+    ctx.strokeStyle = css('--water'); ctx.lineWidth = 2; ctx.stroke();
+    const last = history[history.length - 1];
+    ctx.fillStyle = css('--water'); ctx.beginPath(); ctx.arc(xv(history.length - 1), yv(last.pct), 4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = css('--muted');
+    const span = Math.round(history.length * num('period') * SPEED / 60);
+    ctx.fillText(`últimos ~${span} min (simulado)`, pad.l, H - 4);
+  }
+
+  function renderFormula(reading, h, v, cap, pct) {
+    const shape = $('shape').value, ultra = $('stype').value === 'ultra';
+    const H = usefulHeight();
+    let s = ultra
+      ? `h = H − (d − offset)\n  = ${fmt(H, 1)} − (${fmt(reading, 1)} − ${fmt(num('offset'), 1)}) = ${fmt(h, 1)} cm\n`
+      : `h = coluna d'água medida = ${fmt(h, 1)} cm\n`;
+    if (shape === 'vcyl') s += `V = π · r² · h = π · ${fmt(num('diam') / 2, 1)}² · ${fmt(h, 1)} / 1000`;
+    else if (shape === 'rect') s += `V = C · L · h = ${fmt(num('len'))} · ${fmt(num('wid'))} · ${fmt(h, 1)} / 1000`;
+    else s += `V = [r²·acos((r−h)/r) − (r−h)·√(2rh−h²)] · C / 1000`;
+    s += `\n  = ${fmt(v)} L\nNível = V / Vmáx = ${fmt(v)} / ${fmt(cap)} = ${fmt(pct, 1)}%`;
+    if (ultra) s += `\nLeituras < ${fmt(num('dead'))} cm (zona morta) são descartadas.`;
+    $('formula').textContent = s;
+  }
+
+  function renderManual() {
+    const ultra = $('stype').value === 'ultra';
+    $('manualLbl').textContent = ultra ? 'Distância medida (cm)' : 'Coluna d\'água (cm)';
+    const h = heightFromReading(num('manual'));
+    const v = volumeAt(h), cap = capacity();
+    $('manualOut').innerHTML = `
+      <tr><td>Altura da água</td><td>${fmt(h, 1)} cm</td></tr>
+      <tr><td>Volume</td><td>${fmt(v)} L</td></tr>
+      <tr><td>Nível</td><td>${fmt(cap ? v / cap * 100 : 0, 1)}%</td></tr>
+      <tr><td>Espaço livre</td><td>${fmt(cap - v)} L</td></tr>`;
+  }
+
+  function updateConfigUI() {
+    const shape = $('shape').value;
+    $('fDiam').style.display = shape === 'rect' ? 'none' : '';
+    $('fWid').style.display = shape === 'rect' ? '' : 'none';
+    $('fLen').style.display = shape === 'vcyl' ? 'none' : '';
+    $('fHgt').style.display = shape === 'hcyl' ? 'none' : '';
+    const ultra = $('stype').value === 'ultra';
+    $('fOff').style.display = ultra ? '' : 'none';
+    $('fDead').style.display = ultra ? '' : 'none';
+    $('capHint').textContent = `Capacidade calculada: ${fmt(capacity())} L · altura útil ${fmt(usefulHeight())} cm`;
+    trueH = Math.min(trueH, usefulHeight());
+    raw = []; lastVol = null; flowEMA = 0; // nova configuração: descarta leituras antigas
+    renderManual();
+  }
+
+  // ---------- Eventos ----------
+  cfgIds.forEach(k => $(k).addEventListener('input', () => { saveCfg(); updateConfigUI(); }));
+  $('manual').addEventListener('input', renderManual);
+  $('pumpMode').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    pumpMode = b.dataset.m;
+    [...$('pumpMode').children].forEach(x => x.classList.toggle('on', x === b));
+    log(`Modo da bomba: ${b.textContent}`, 'ok');
+  });
+  let timer = null;
+  const schedule = () => { clearTimeout(timer); if (running) timer = setTimeout(() => { tick(); schedule(); }, Math.max(1, num('period')) * 1000); };
+  $('btnRun').addEventListener('click', () => {
+    running = !running;
+    $('btnRun').textContent = running ? 'Pausar' : 'Retomar';
+    $('connDot').classList.toggle('off', !running);
+    $('connText').textContent = running ? 'Sensor online · simulação' : 'Leitura pausada';
+    schedule();
+  });
+  $('btnTheme').addEventListener('click', () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark';
+    drawChart(); tick();
+  });
+  window.addEventListener('resize', drawChart);
+
+  updateConfigUI();
+  log('Dashboard iniciado (modo simulação)', 'ok');
+  for (let i = 0; i < 20; i++) tick(); // pré-carrega histórico
+  schedule();
+})();
+</script>
+</body>
+</html>
