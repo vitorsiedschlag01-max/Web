@@ -10,7 +10,7 @@
   :root {
     --bg: #e9f0f8; --surface: #ffffff; --surface-2: #f4f7fb; --border: #dce5ef;
     --text: #1b2533; --muted: #6b7789; --brand: #1677e6; --brand-dark: #0f5fc0;
-    --water-1: #4f9cf2; --water-2: #1d63d8; --water-3: #174fb3;
+    --s-inf: #0e9f9a; --s-sup: #1677e6;
     --ok: #1fa54a; --ok-soft: #e3f6ea; --warn: #e49b12; --warn-soft: #fdf2dc;
     --danger: #e2463c; --danger-soft: #fde8e6; --grid: #e6edf5;
     --shadow: 0 1px 2px rgba(20, 40, 80, .06), 0 6px 18px rgba(20, 40, 80, .06);
@@ -18,14 +18,14 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #0d141e; --surface: #151e2b; --surface-2: #1b2635; --border: #263347;
-      --text: #e7edf5; --muted: #95a3b8; --grid: #223044;
+      --text: #e7edf5; --muted: #95a3b8; --grid: #223044; --s-inf: #2cc4bd; --s-sup: #4b9cf5;
       --ok-soft: #133524; --warn-soft: #3a2c0f; --danger-soft: #3d1a18;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
     }
   }
   :root[data-theme="dark"] {
     --bg: #0d141e; --surface: #151e2b; --surface-2: #1b2635; --border: #263347;
-    --text: #e7edf5; --muted: #95a3b8; --grid: #223044;
+    --text: #e7edf5; --muted: #95a3b8; --grid: #223044; --s-inf: #2cc4bd; --s-sup: #4b9cf5;
     --ok-soft: #133524; --warn-soft: #3a2c0f; --danger-soft: #3d1a18;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
   }
@@ -64,6 +64,7 @@
     border-radius: 9px; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700;
     display: grid; place-items: center;
   }
+  .bell-count:empty { display: none; }
   .bell-count.bump { animation: bump .5s ease; }
   @keyframes bump { 30% { transform: scale(1.35); } }
   .btn-primary {
@@ -74,9 +75,10 @@
 
   .handle { width: 40px; height: 4px; border-radius: 2px; background: var(--text); opacity: .8; margin: 10px auto 0; }
 
-  /* ---------- Grid ---------- */
+  /* ---------- Grids ---------- */
+  .wrap { max-width: 1500px; margin: 0 auto; padding: 12px 12px 90px; display: flex; flex-direction: column; gap: 10px; }
   .board {
-    display: grid; gap: 10px; padding: 12px 12px 90px; max-width: 1500px; margin: 0 auto;
+    display: grid; gap: 10px;
     grid-template-columns: repeat(2, minmax(200px, 1fr)) minmax(220px, 1fr) minmax(0, 2.6fr);
     grid-template-areas:
       "t1 t2 p1 c1"
@@ -86,21 +88,46 @@
   .p1 { grid-area: p1; } .p2 { grid-area: p2; }
   .c1 { grid-area: c1; } .c2 { grid-area: c2; }
 
+  .section-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 8px; padding: 0 2px; }
+  .section-bar h2 { margin: 0; font-size: 17px; font-weight: 700; }
+  .section-bar p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+  .seg { display: inline-flex; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 3px; gap: 2px; }
+  .seg button { border: 0; background: transparent; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+  .seg button i { width: 8px; height: 8px; border-radius: 50%; }
+  .seg button.on { background: var(--brand); color: #fff; }
+  .seg button.on i { box-shadow: 0 0 0 2px #fff; }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .analysis {
+    display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-areas: "hist hist hist calc" "man ev ev ev";
+  }
+  .a-hist { grid-area: hist; } .a-calc { grid-area: calc; } .a-man { grid-area: man; } .a-ev { grid-area: ev; }
+
   .card {
     position: relative; background: var(--surface); border-radius: 6px; box-shadow: var(--shadow);
     padding: 10px 14px 16px; min-width: 0; display: flex; flex-direction: column;
     animation: rise .5s ease both;
   }
-  .card:nth-child(2) { animation-delay: .05s; } .card:nth-child(3) { animation-delay: .1s; }
-  .card:nth-child(4) { animation-delay: .15s; } .card:nth-child(5) { animation-delay: .2s; }
-  .card:nth-child(6) { animation-delay: .25s; }
   @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
   .card-head { align-self: stretch; display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--muted); }
   .stamp { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
-  .live { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 0 rgba(31,165,74,.5); animation: ping 2s infinite; }
+  .live { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); animation: ping 2s infinite; }
   .live.stale { background: #a7b1bf; animation: none; }
   @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(31,165,74,.45); } 70%,100% { box-shadow: 0 0 0 6px rgba(31,165,74,0); } }
   .more { border: 0; background: transparent; color: var(--muted); cursor: pointer; letter-spacing: 1px; font-weight: 700; padding: 0 2px; }
+  .card-title { font-size: 17px; color: var(--muted); margin-top: 8px; }
+  .card-title b { display: block; color: var(--text); font-size: 18px; font-weight: 700; }
+
+  /* ---------- KPI ---------- */
+  .kpi { padding: 10px 14px 14px; }
+  .kpi .label { margin-top: 8px; color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 6px; }
+  .kpi .value { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; letter-spacing: -.01em; }
+  .kpi .unit { font-size: 14px; color: var(--muted); font-weight: 500; margin-left: 3px; }
+  .kpi .foot { font-size: 12px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .kpi .meter { height: 6px; border-radius: 3px; background: var(--surface-2); margin-top: 10px; overflow: hidden; }
+  .kpi .meter i { display: block; height: 100%; background: var(--brand); border-radius: 3px; transition: width .8s ease, background .3s; }
+  .kpi .value.up { color: var(--ok); } .kpi .value.down { color: var(--warn); }
 
   /* ---------- Tank ---------- */
   .tank-card { align-items: center; text-align: center; }
@@ -121,9 +148,13 @@
   .drip { opacity: 0; }
   .filling .drip { animation: drip .7s linear infinite; }
   @keyframes drip { 0% { transform: translateY(0); opacity: .9; } 100% { transform: translateY(30px); opacity: 0; } }
+  .beam { stroke-dasharray: 3 4; animation: beam .8s linear infinite; transition: all 1.2s cubic-bezier(.4,.1,.2,1); }
+  @keyframes beam { to { stroke-dashoffset: -14; } }
+  .ping-ring { transform-box: fill-box; transform-origin: center; animation: ring 1.6s ease-out infinite; }
+  @keyframes ring { 0% { transform: scale(.4); opacity: .9; } 100% { transform: scale(1.8); opacity: 0; } }
   .tank-pct { font-size: 34px; font-weight: 700; fill: #fff; transition: fill .4s; }
   .tank-sub { font-size: 16px; font-weight: 600; fill: #fff; transition: fill .4s; }
-  .tank-svg.dry .tank-pct, .tank-svg.dry .tank-sub { fill: #3a5e95; }
+  .tank-svg.dry .tank-pct, .tank-svg.dry .tank-sub { fill: #1d3d73; stroke: #f3f7fc; stroke-width: 4px; paint-order: stroke; stroke-linejoin: round; }
   .tank-txt-shadow { filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
   .badge {
     display: inline-block; padding: 3px 10px; border-radius: 3px; font-weight: 700; font-size: 13px; color: #fff;
@@ -132,9 +163,8 @@
   .badge.warn { background: var(--warn); } .badge.danger { background: var(--danger); animation: blink 1s steps(2) infinite; }
   @keyframes blink { 50% { opacity: .55; } }
   .trend { margin-top: 10px; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
-  .trend .arr { display: inline-block; transition: transform .4s; }
   .trend.up { color: var(--ok); } .trend.down { color: var(--warn); }
-  .tank-meta { margin: 6px 0 auto; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .tank-meta { margin: 6px 0 auto; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; line-height: 1.6; }
 
   /* ---------- Pump ---------- */
   .pump-card { align-items: center; text-align: center; }
@@ -201,12 +231,39 @@
   .bar:hover { filter: brightness(1.1); }
   .x-axis { display: grid; gap: 3px; padding: 4px 6px 0; height: 22px; font-size: 10px; color: var(--muted); text-align: center; }
   .x-axis span { white-space: nowrap; overflow: visible; display: flex; justify-content: center; }
-  .legend { display: flex; justify-content: flex-end; gap: 6px; align-items: center; font-size: 10px; color: var(--muted); margin-top: 6px; }
+  .legend { display: flex; justify-content: flex-end; gap: 12px; align-items: center; font-size: 11px; color: var(--muted); margin-top: 6px; flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
   .legend i { width: 10px; height: 10px; background: var(--brand); border-radius: 2px; }
+  .legend i.line { height: 3px; width: 14px; }
+  .legend i.dash { height: 0; width: 14px; border-top: 2px dashed var(--danger); background: none; }
+  .legend i.band { background: var(--warn); opacity: .35; }
   .tip {
     position: fixed; z-index: 50; pointer-events: none; background: #1b2533; color: #fff; font-size: 12px;
-    padding: 6px 8px; border-radius: 4px; opacity: 0; transition: opacity .12s; white-space: nowrap;
+    padding: 6px 8px; border-radius: 4px; opacity: 0; transition: opacity .12s; white-space: nowrap; line-height: 1.5;
   }
+
+  /* ---------- Line chart ---------- */
+  .line-wrap { position: relative; margin-top: 10px; flex: 1; min-height: 260px; }
+  .line-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* ---------- Calc / manual / events ---------- */
+  .calc { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; background: var(--surface-2); padding: 12px; border-radius: 6px; white-space: pre-wrap; line-height: 1.7; margin-top: 10px; flex: 1; }
+  .calc .hl { color: var(--brand); font-weight: 700; }
+  .f { display: grid; grid-template-columns: 1fr 110px; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 13px; }
+  .f input, .f select { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface-2); }
+  .f.full { grid-template-columns: 1fr; }
+  .out { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
+  .out td { padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .out td:last-child { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .events { list-style: none; margin: 0; padding: 0; }
+  .events li { display: grid; grid-template-columns: 10px 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; animation: rise .35s ease both; }
+  .events li i { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; background: var(--ok); }
+  .events li.warn i { background: var(--warn); } .events li.danger i { background: var(--danger); }
+  .events time { display: block; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .ev-card .events { max-height: 236px; overflow-y: auto; margin-top: 8px; padding-right: 4px; }
+  .ev-filter { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .ev-filter button { border: 1px solid var(--border); background: var(--surface); border-radius: 12px; padding: 3px 10px; font-size: 12px; cursor: pointer; color: var(--muted); }
+  .ev-filter button.on { border-color: var(--brand); color: var(--brand); font-weight: 600; }
 
   /* ---------- Floating toolbar ---------- */
   .fab {
@@ -221,22 +278,16 @@
   .scrim { position: fixed; inset: 0; background: rgba(10, 20, 40, .3); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 39; }
   .scrim.open { opacity: 1; pointer-events: auto; }
   .drawer {
-    position: fixed; top: 0; right: 0; bottom: 0; width: min(360px, 100%); z-index: 40; background: var(--surface);
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(380px, 100%); z-index: 40; background: var(--surface);
     box-shadow: -10px 0 30px rgba(0,0,0,.15); transform: translateX(105%); transition: transform .25s ease; overflow-y: auto; padding: 18px 20px 30px;
   }
   .drawer.open { transform: none; }
   .drawer h3 { margin: 0 0 4px; font-size: 17px; }
   .drawer h4 { margin: 20px 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
   .drawer .close { position: absolute; top: 12px; right: 12px; }
-  .f { display: grid; grid-template-columns: 1fr 96px; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 13px; }
-  .f input, .f select { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface-2); }
+  .drawer .seg { margin-top: 12px; }
   .note { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
-  .calc { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11.5px; background: var(--surface-2); padding: 10px; border-radius: 6px; white-space: pre-wrap; line-height: 1.6; }
-  .events { list-style: none; margin: 0; padding: 0; }
-  .events li { display: grid; grid-template-columns: 10px 1fr; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .events li i { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; background: var(--ok); }
-  .events li.warn i { background: var(--warn); } .events li.danger i { background: var(--danger); }
-  .events time { display: block; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .cap-hint { font-size: 12px; color: var(--brand); font-weight: 600; margin: 2px 0 6px; }
 
   /* ---------- Responsive ---------- */
   @media (max-width: 1180px) {
@@ -244,13 +295,17 @@
       grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(0, 1fr);
       grid-template-areas: "t1 t2 p1" "t1 t2 p2" "c1 c1 c1" "c2 c2 c2";
     }
+    .analysis { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "hist hist" "calc man" "ev ev"; }
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 760px) {
     .topbar { grid-template-columns: 1fr auto; padding: 8px 16px; }
     .site-select { grid-column: 1 / -1; grid-row: 2; width: 100%; }
     .btn-primary .txt { display: none; }
     .btn-primary { padding: 0 10px; }
-    .board { padding: 10px 16px 90px; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "t1 t2" "p1 p2" "c1 c1" "c2 c2"; }
+    .wrap { padding: 10px 16px 90px; }
+    .board { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "t1 t2" "p1 p2" "c1 c1" "c2 c2"; }
+    .analysis { grid-template-columns: 1fr; grid-template-areas: "hist" "calc" "man" "ev"; }
     .card-head { font-size: 10px; } .card { padding: 10px 10px 14px; }
     .tank-title { font-size: 13px; } .tank-name { font-size: 15px; }
     .tank-pct { font-size: 30px; }
@@ -258,6 +313,8 @@
     .pump-state { font-size: 22px; }
     .chart-top { grid-template-columns: 1fr; }
     .chart-ctrl { grid-template-columns: auto 1fr; }
+    .kpi .value { font-size: 24px; }
+    .section-bar .seg { width: 100%; } .section-bar .seg button { flex: 1; justify-content: center; }
   }
   @media (max-width: 420px) {
     .pump-info { font-size: 12px; padding: 6px; }
@@ -292,9 +349,9 @@
     </button>
     <button class="icon-btn" id="btnBell" title="Eventos" aria-label="Eventos">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.5-2.5h-5A2.5 2.5 0 0 0 12 22zm7-6V11a7 7 0 0 0-5.5-6.8V3.5a1.5 1.5 0 0 0-3 0v.7A7 7 0 0 0 5 11v5l-2 2v1h18v-1z"/></svg>
-      <span class="bell-count" id="bellCount">0</span>
+      <span class="bell-count" id="bellCount"></span>
     </button>
-    <button class="icon-btn" id="btnSettings" title="Configurar sensores" aria-label="Configurações">
+    <button class="icon-btn" id="btnSettings" title="Configurar reservatórios e sensores" aria-label="Configurações">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
     </button>
     <button class="btn-primary" id="btnWidget"><span style="font-size:18px;line-height:1">+</span><span class="txt">Widget</span></button>
@@ -302,17 +359,105 @@
 </header>
 <div class="handle"></div>
 
-<main class="board" id="board">
-  <!-- Tanques -->
-  <section class="card tank-card t1" id="tank-inf"></section>
-  <section class="card tank-card t2" id="tank-sup"></section>
-  <!-- Bombas -->
-  <section class="card pump-card p1" id="pump-1"></section>
-  <section class="card pump-card p2" id="pump-2"></section>
-  <!-- Gráficos -->
-  <section class="card c1" id="chart-1"></section>
-  <section class="card c2" id="chart-2"></section>
-</main>
+<div class="wrap">
+  <!-- Visão geral -->
+  <main class="board">
+    <section class="card tank-card t1" id="tank-inf"></section>
+    <section class="card tank-card t2" id="tank-sup"></section>
+    <section class="card pump-card p1" id="pump-1"></section>
+    <section class="card pump-card p2" id="pump-2"></section>
+    <section class="card c1" id="chart-1"></section>
+    <section class="card c2" id="chart-2"></section>
+  </main>
+
+  <!-- Análise do reservatório -->
+  <div class="section-bar">
+    <div>
+      <h2>Análise do reservatório</h2>
+      <p>Cálculo de nível, volume e vazão a partir da leitura do sensor SmartG</p>
+    </div>
+    <div class="seg" id="focusSeg" role="tablist">
+      <button data-k="inf" role="tab"><i style="background:var(--s-inf)"></i>Caixa Inferior</button>
+      <button data-k="sup" role="tab" class="on"><i style="background:var(--s-sup)"></i>Caixa Superior</button>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <section class="card kpi">
+      <div class="card-head"><span class="stamp"><i class="live"></i><span data-stamp></span></span><button class="more" aria-label="Opções">•••</button></div>
+      <div class="label">Nível</div>
+      <div class="value" id="kPct">–</div>
+      <div class="foot" id="kPctFoot">&nbsp;</div>
+      <div class="meter"><i id="kMeter" style="width:0"></i></div>
+    </section>
+    <section class="card kpi">
+      <div class="card-head"><span class="stamp"><i class="live"></i><span data-stamp></span></span><button class="more" aria-label="Opções">•••</button></div>
+      <div class="label">Altura da água</div>
+      <div class="value" id="kH">–</div>
+      <div class="foot" id="kRead">&nbsp;</div>
+      <div class="foot" id="kSensor">&nbsp;</div>
+    </section>
+    <section class="card kpi">
+      <div class="card-head"><span class="stamp"><i class="live"></i><span data-stamp></span></span><button class="more" aria-label="Opções">•••</button></div>
+      <div class="label">Volume</div>
+      <div class="value" id="kVol">–</div>
+      <div class="foot" id="kCap">&nbsp;</div>
+      <div class="foot" id="kFree">&nbsp;</div>
+    </section>
+    <section class="card kpi">
+      <div class="card-head"><span class="stamp"><i class="live"></i><span data-stamp></span></span><button class="more" aria-label="Opções">•••</button></div>
+      <div class="label">Vazão líquida</div>
+      <div class="value" id="kFlow">–</div>
+      <div class="foot" id="kEta">&nbsp;</div>
+      <div class="foot" id="kFlowSrc">&nbsp;</div>
+    </section>
+  </div>
+
+  <div class="analysis">
+    <section class="card a-hist">
+      <div class="card-head"><span class="stamp"><i class="live"></i><span data-stamp></span></span><button class="more" aria-label="Opções">•••</button></div>
+      <div class="chart-top">
+        <div><div class="chart-kind">Gráfico de Linhas</div><div class="chart-name">Histórico de nível</div></div>
+        <div class="chart-ctrl">
+          <span class="lbl">Janela</span>
+          <select id="histWin" aria-label="Janela do histórico"><option value="3">Últimas 3 h</option><option value="6" selected>Últimas 6 h</option><option value="12">Últimas 12 h</option></select>
+        </div>
+      </div>
+      <div class="line-wrap"><canvas id="lineChart"></canvas></div>
+      <div class="legend">
+        <span><i class="line" style="background:var(--s-inf)"></i>Inferior (%)</span>
+        <span><i class="line" style="background:var(--s-sup)"></i>Superior (%)</span>
+        <span><i class="dash"></i>Crítico / Transbordo</span>
+        <span><i class="band"></i>Faixa da bomba</span>
+      </div>
+    </section>
+
+    <section class="card a-calc">
+      <div class="card-head"><span class="stamp"><i class="live"></i><span data-stamp></span></span><button class="more" aria-label="Opções">•••</button></div>
+      <div class="card-title">Cálculo aplicado<b id="calcName">Caixa D'Água Superior</b></div>
+      <div class="calc" id="calc"></div>
+    </section>
+
+    <section class="card a-man">
+      <div class="card-head"><span class="stamp"><i class="live"></i><span data-stamp></span></span><button class="more" aria-label="Opções">•••</button></div>
+      <div class="card-title">Calculadora manual<b id="manName">Caixa D'Água Superior</b></div>
+      <div class="f" style="margin-top:12px"><label for="manual" id="manualLbl">Distância medida (cm)</label><input type="number" id="manual" step="0.1" value="60"></div>
+      <table class="out" id="manualOut"></table>
+    </section>
+
+    <section class="card a-ev ev-card">
+      <div class="card-head"><span class="stamp"><i class="live"></i><span data-stamp></span></span><button class="more" aria-label="Opções">•••</button></div>
+      <div class="card-title">Eventos<b>Alarmes e acionamentos</b></div>
+      <div class="ev-filter" id="evFilter">
+        <button data-f="all" class="on">Todos</button>
+        <button data-f="danger">Alarmes</button>
+        <button data-f="warn">Avisos</button>
+        <button data-f="ok">Info</button>
+      </div>
+      <ul class="events" id="eventsCard"></ul>
+    </section>
+  </div>
+</div>
 
 <div class="fab" role="toolbar" aria-label="Controles da simulação">
   <button id="btnPlay" title="Pausar simulação" aria-label="Pausar">
@@ -334,29 +479,27 @@
 <aside class="drawer" id="drwSettings" aria-label="Configurações">
   <button class="icon-btn close" data-close aria-label="Fechar">✕</button>
   <h3>Configuração</h3>
-  <p class="note">O sensor SmartG mede a coluna d'água em mca (metros de coluna d'água). O nível é calculado pela altura útil de cada reservatório.</p>
-
-  <h4>Caixa d'água inferior</h4>
-  <div class="f"><label for="infH">Altura útil (m)</label><input type="number" step="0.01" id="infH" value="1.77"></div>
-  <div class="f"><label for="infV">Capacidade (L)</label><input type="number" step="100" id="infV" value="20000"></div>
-  <div class="f"><label for="infSupply">Entrada da rua (L/min)</label><input type="number" id="infSupply" value="90"></div>
-
-  <h4>Caixa d'água superior</h4>
-  <div class="f"><label for="supH">Altura útil (m)</label><input type="number" step="0.01" id="supH" value="1.05"></div>
-  <div class="f"><label for="supV">Capacidade (L)</label><input type="number" step="100" id="supV" value="10000"></div>
-  <div class="f"><label for="use">Consumo médio (L/min)</label><input type="number" id="use" value="110"></div>
-
-  <h4>Bombas</h4>
-  <div class="f"><label for="pumpQ">Vazão por bomba (L/min)</label><input type="number" id="pumpQ" value="220"></div>
-  <div class="f"><label for="onAt">Liga com superior abaixo de (%)</label><input type="number" id="onAt" value="75"></div>
-  <div class="f"><label for="offAt">Desliga com superior acima de (%)</label><input type="number" id="offAt" value="95"></div>
-  <div class="f"><label for="dryAt">Proteção: inferior mínimo (%)</label><input type="number" id="dryAt" value="15"></div>
-  <div class="f"><label for="alt">Alternar bombas a cada ciclo</label><select id="alt"><option value="1">Sim</option><option value="0">Não</option></select></div>
-  <div class="f"><label for="mode1">Modo Bomba 1</label><select id="mode1"><option value="auto">Automático</option><option value="on">Forçar ligada</option><option value="off">Forçar desligada</option></select></div>
-  <div class="f"><label for="mode2">Modo Bomba 2</label><select id="mode2"><option value="auto">Automático</option><option value="on">Forçar ligada</option><option value="off">Forçar desligada</option></select></div>
-
-  <h4>Cálculo atual</h4>
-  <div class="calc" id="calc"></div>
+  <p class="note">Geometria do reservatório, sensor SmartG, alarmes e automação das bombas.</p>
+  <div class="seg" id="cfgSeg">
+    <button data-tab="inf" class="on">Inferior</button>
+    <button data-tab="sup">Superior</button>
+    <button data-tab="pumps">Bombas</button>
+  </div>
+  <div data-pane="inf" id="cfg-inf"></div>
+  <div data-pane="sup" id="cfg-sup" hidden></div>
+  <div data-pane="pumps" hidden>
+    <h4>Abastecimento e consumo</h4>
+    <div class="f"><label for="infSupply">Entrada da rua → inferior (L/min)</label><input type="number" id="infSupply" value="90"></div>
+    <div class="f"><label for="use">Consumo médio do prédio (L/min)</label><input type="number" id="use" value="110"></div>
+    <h4>Automação</h4>
+    <div class="f"><label for="pumpQ">Vazão por bomba (L/min)</label><input type="number" id="pumpQ" value="220"></div>
+    <div class="f"><label for="onAt">Liga com superior abaixo de (%)</label><input type="number" id="onAt" value="75"></div>
+    <div class="f"><label for="offAt">Desliga com superior acima de (%)</label><input type="number" id="offAt" value="95"></div>
+    <div class="f"><label for="dryAt">Proteção a seco: inferior mínimo (%)</label><input type="number" id="dryAt" value="15"></div>
+    <div class="f"><label for="alt">Alternar bombas a cada ciclo</label><select id="alt"><option value="1">Sim</option><option value="0">Não</option></select></div>
+    <div class="f"><label for="mode1">Modo Bomba 1</label><select id="mode1"><option value="auto">Automático</option><option value="on">Forçar ligada</option><option value="off">Forçar desligada</option></select></div>
+    <div class="f"><label for="mode2">Modo Bomba 2</label><select id="mode2"><option value="auto">Automático</option><option value="on">Forçar ligada</option><option value="off">Forçar desligada</option></select></div>
+  </div>
 </aside>
 
 <div class="tip" id="tip"></div>
@@ -366,14 +509,94 @@
   const $ = id => document.getElementById(id);
   const val = id => parseFloat($(id).value) || 0;
   const pad = n => String(n).padStart(2, '0');
-  const fmt = (v, d = 0) => v.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const fmt = (v, d = 0) => (isFinite(v) ? v : 0).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
   const hms = sec => { sec = Math.round(sec); return `${pad(Math.floor(sec / 3600))}:${pad(Math.floor(sec / 60) % 60)}:${pad(sec % 60)}`; };
   const stamp = d => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  const hhmm = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
   const dots = '<button class="more" aria-label="Opções">•••</button>';
+  const NAMES = { inf: "Caixa D'Água Inferior", sup: "Caixa D'Água Superior" };
+
+  // ================= Configuração por reservatório =================
+  const DEFAULTS = {
+    inf: { shape: 'rect', diam: 300, len: 400, wid: 280, hgt: 177, stype: 'press', offset: 25, dead: 20, win: 5, period: 1, low: 30, crit: 15, high: 99 },
+    sup: { shape: 'vcyl', diam: 350, len: 400, wid: 300, hgt: 105, stype: 'ultra', offset: 25, dead: 20, win: 5, period: 1, low: 30, crit: 15, high: 99 },
+  };
+  function cfgTemplate(k) {
+    const d = DEFAULTS[k];
+    const f = (id, label, v, extra = '') => `<div class="f" data-row="${id}"><label for="${k}_${id}">${label}</label><input type="number" id="${k}_${id}" value="${v}" ${extra}></div>`;
+    return `
+      <h4>Reservatório</h4>
+      <div class="f full"><label for="${k}_shape">Formato</label>
+        <select id="${k}_shape">
+          <option value="vcyl" ${d.shape === 'vcyl' ? 'selected' : ''}>Cilíndrico vertical (caixa d'água)</option>
+          <option value="rect" ${d.shape === 'rect' ? 'selected' : ''}>Retangular / cisterna</option>
+          <option value="hcyl" ${d.shape === 'hcyl' ? 'selected' : ''}>Cilíndrico horizontal (tanque deitado)</option>
+        </select></div>
+      ${f('diam', 'Diâmetro (cm)', d.diam, 'min="1"')}
+      ${f('len', 'Comprimento (cm)', d.len, 'min="1"')}
+      ${f('wid', 'Largura (cm)', d.wid, 'min="1"')}
+      ${f('hgt', 'Altura útil (cm)', d.hgt, 'min="1"')}
+      <p class="cap-hint" id="${k}_cap"></p>
+      <h4>Sensor SmartG</h4>
+      <div class="f full"><label for="${k}_stype">Tipo de medição</label>
+        <select id="${k}_stype">
+          <option value="ultra" ${d.stype === 'ultra' ? 'selected' : ''}>Ultrassônico (distância até a lâmina)</option>
+          <option value="press" ${d.stype === 'press' ? 'selected' : ''}>Pressão hidrostática (mca)</option>
+        </select></div>
+      ${f('offset', 'Distância sensor → nível máx. (cm)', d.offset, 'min="0"')}
+      ${f('dead', 'Zona morta (cm)', d.dead, 'min="0"')}
+      ${f('win', 'Filtro média móvel (amostras)', d.win, 'min="1" max="30"')}
+      ${f('period', 'Intervalo de leitura (s)', d.period, 'min="1" max="60"')}
+      <h4>Alarmes</h4>
+      ${f('low', 'Nível baixo (%)', d.low)}
+      ${f('crit', 'Nível crítico (%)', d.crit)}
+      ${f('high', 'Transbordo (%)', d.high)}`;
+  }
+  $('cfg-inf').innerHTML = cfgTemplate('inf');
+  $('cfg-sup').innerHTML = cfgTemplate('sup');
+  const c = (k, f) => k ? (f === 'shape' || f === 'stype' ? $(`${k}_${f}`).value : val(`${k}_${f}`)) : null;
+
+  // Preferências locais (opcional)
+  const cfgInputs = () => [...document.querySelectorAll('#drwSettings input, #drwSettings select')];
+  try {
+    const saved = JSON.parse(localStorage.getItem('smartg-v3') || '{}');
+    cfgInputs().forEach(i => { if (saved[i.id] !== undefined) i.value = saved[i.id]; });
+  } catch (e) {}
+  const saveCfg = () => { try { localStorage.setItem('smartg-v3', JSON.stringify(Object.fromEntries(cfgInputs().map(i => [i.id, i.value])))); } catch (e) {} };
+
+  // ================= Geometria =================
+  const usefulH = k => c(k, 'shape') === 'hcyl' ? c(k, 'diam') : c(k, 'hgt');
+  function volumeAt(k, h) {   // litros para altura h (cm)
+    const shape = c(k, 'shape');
+    h = Math.max(0, Math.min(h, usefulH(k)));
+    if (shape === 'vcyl') { const r = c(k, 'diam') / 2; return Math.PI * r * r * h / 1000; }
+    if (shape === 'rect') return c(k, 'len') * c(k, 'wid') * h / 1000;
+    const r = c(k, 'diam') / 2;   // cilindro horizontal: segmento circular × comprimento
+    const area = r * r * Math.acos((r - h) / r) - (r - h) * Math.sqrt(Math.max(0, 2 * r * h - h * h));
+    return area * c(k, 'len') / 1000;
+  }
+  const capacity = k => volumeAt(k, usefulH(k));
+  function heightForVolume(k, vol) {
+    let lo = 0, hi = usefulH(k);
+    for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (volumeAt(k, m) < vol) lo = m; else hi = m; }
+    return (lo + hi) / 2;
+  }
+  // leitura bruta do sensor ↔ altura de água
+  const readingFromH = (k, h) => c(k, 'stype') === 'ultra' ? usefulH(k) - h + c(k, 'offset') : h / 100;
+  function hFromReading(k, r) {
+    const H = usefulH(k);
+    const h = c(k, 'stype') === 'ultra' ? H - (Math.max(r, c(k, 'dead')) - c(k, 'offset')) : r * 100;
+    return Math.max(0, Math.min(H, h));
+  }
 
   // ================= Templates =================
-  function tankTemplate(key, name) {
-    // Corpo do galão: x=28..172, y=40..246
+  function wavePath(amp, depth) {
+    let d = `M0 0`;
+    for (let x = 0; x < 288; x += 72) d += ` Q${x + 18} ${-amp} ${x + 36} 0 Q${x + 54} ${amp} ${x + 72} 0`;
+    return d + ` V${depth} H0 Z`;
+  }
+  function tankTemplate(key) {
     const ribs = [92, 144, 196].map(y =>
       `<path d="M28 ${y} Q100 ${y + 8} 172 ${y}" stroke="#fff" stroke-opacity=".38" stroke-width="2.5" fill="none"/>
        <path d="M28 ${y + 3} Q100 ${y + 11} 172 ${y + 3}" stroke="#0b3a8a" stroke-opacity=".12" stroke-width="1.5" fill="none"/>`).join('');
@@ -382,10 +605,10 @@
       return `<circle class="bubble" cx="${x}" cy="240" r="${r}" fill="#fff" fill-opacity=".7" style="animation-delay:${(i * .37).toFixed(2)}s;--dx:${(i % 2 ? 1 : -1) * (3 + i % 4)}px"/>`;
     }).join('');
     return `
-      <div class="card-head"><span class="stamp"><i class="live"></i><span data-stamp></span></span>${dots}</div>
+      <div class="card-head"><span class="stamp"><i class="live"></i><span data-readstamp></span></span>${dots}</div>
       <div class="tank-title">Nível Reservatório</div>
-      <div class="tank-name">${name}</div>
-      <svg class="tank-svg" viewBox="0 0 200 262" role="img" aria-label="Nível ${name}">
+      <div class="tank-name">${NAMES[key]}</div>
+      <svg class="tank-svg" viewBox="0 0 200 262" role="img" aria-label="Nível ${NAMES[key]}">
         <defs>
           <linearGradient id="${key}-glass" x1="0" x2="1">
             <stop offset="0" stop-color="#cfdcf0"/><stop offset=".22" stop-color="#f6f9fd"/>
@@ -404,11 +627,9 @@
           <clipPath id="${key}-clip"><rect x="28" y="40" width="144" height="206" rx="26"/></clipPath>
         </defs>
         <ellipse cx="100" cy="252" rx="78" ry="7" fill="#0b2a5c" opacity=".12"/>
-        <!-- tampa -->
         <path d="M40 46 Q42 22 68 20 L132 20 Q158 22 160 46 Z" fill="url(#${key}-lid)"/>
         <rect x="80" y="8" width="40" height="15" rx="5" fill="url(#${key}-lid)"/>
         <rect x="86" y="11" width="28" height="3" rx="1.5" fill="#fff" opacity=".6"/>
-        <!-- corpo -->
         <rect x="28" y="40" width="144" height="206" rx="26" fill="url(#${key}-glass)"/>
         <g clip-path="url(#${key}-clip)">
           <g class="tank-water" data-water style="transform: translateY(150px)">
@@ -421,23 +642,31 @@
           <rect class="drip" x="96" y="40" width="8" height="14" rx="4" fill="#7db8f8"/>
           ${ribs}
           <rect x="40" y="40" width="22" height="206" fill="url(#${key}-shine)"/>
+          <!-- feixe ultrassônico -->
+          <g data-ultra>
+            <line class="beam" data-beam x1="150" x2="150" y1="44" y2="150" stroke="#ffb020" stroke-width="2"/>
+          </g>
         </g>
         <rect x="28" y="40" width="144" height="206" rx="26" fill="none" stroke="#0b3a8a" stroke-opacity=".12"/>
+        <!-- sensor SmartG -->
+        <g data-ultra>
+          <rect x="138" y="28" width="24" height="14" rx="4" fill="#1677e6"/>
+          <circle cx="150" cy="35" r="3" fill="#fff"/>
+          <circle class="ping-ring" cx="150" cy="35" r="5" fill="none" stroke="#1677e6" stroke-width="1.5"/>
+        </g>
+        <g data-press>
+          <line x1="150" y1="30" x2="150" y2="232" stroke="#6b7789" stroke-width="1.5" stroke-dasharray="1 0"/>
+          <rect x="142" y="226" width="16" height="12" rx="4" fill="#1677e6"/>
+          <circle class="ping-ring" cx="150" cy="232" r="5" fill="none" stroke="#fff" stroke-width="1.5"/>
+        </g>
         <g class="tank-txt-shadow">
           <text class="tank-pct" x="100" y="138" text-anchor="middle" data-pct>–</text>
           <text class="tank-sub" x="100" y="166" text-anchor="middle" data-mca>–</text>
         </g>
       </svg>
       <span class="badge" data-badge>Normal</span>
-      <div class="trend" data-trend><span class="arr">•</span><span>Neutro</span></div>
+      <div class="trend" data-trend><span>•</span><span>Neutro</span></div>
       <div class="tank-meta" data-meta></div>`;
-  }
-
-  // Onda periódica: 2 larguras do corpo (144px), comprimento de onda 72px
-  function wavePath(amp, depth) {
-    let d = `M0 0`;
-    for (let x = 0; x < 288; x += 72) d += ` Q${x + 18} ${-amp} ${x + 36} 0 Q${x + 54} ${amp} ${x + 72} 0`;
-    return d + ` V${depth} H0 Z`;
   }
 
   function pumpTemplate(n) {
@@ -449,32 +678,26 @@
       <svg class="motor" viewBox="0 0 160 110" aria-hidden="true" data-motor>
         <g class="shake">
           <g class="glow">
-            <!-- tubulação de recalque -->
             <path d="M132 50 V18 H158" fill="none" stroke="currentColor" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" opacity=".18"/>
             <path d="M132 50 V18 H158" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
             <path class="flow" d="M132 50 V18 H158" fill="none" stroke="#3a95ea" stroke-width="3.2" stroke-linecap="round"/>
             <rect x="124" y="27" width="16" height="5" rx="1.5" fill="currentColor"/>
-            <!-- carcaça do motor -->
             <rect x="34" y="34" width="62" height="52" rx="7" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.6"/>
             ${fins}
             <rect x="56" y="26" width="18" height="9" rx="2" fill="currentColor" fill-opacity=".15" stroke="currentColor" stroke-width="2.2"/>
-            <!-- tampa do ventilador -->
             <circle cx="28" cy="60" r="21" fill="var(--surface)" stroke="currentColor" stroke-width="2.6"/>
             <g class="fan">
               <circle cx="28" cy="60" r="16" fill="none"/>
               <path d="M28 60 Q22 47 28 44 Q34 47 28 60 Z M28 60 Q41 54 44 60 Q41 66 28 60 Z M28 60 Q34 73 28 76 Q22 73 28 60 Z M28 60 Q15 66 12 60 Q15 54 28 60 Z" fill="currentColor" opacity=".85"/>
               <circle cx="28" cy="60" r="3.2" fill="currentColor"/>
             </g>
-            <!-- eixo -->
             <rect x="96" y="56" width="12" height="8" fill="currentColor"/>
-            <!-- voluta / bomba -->
             <circle cx="126" cy="62" r="19" fill="currentColor" fill-opacity=".12" stroke="currentColor" stroke-width="2.6"/>
             <g class="imp">
               <circle cx="126" cy="62" r="12" fill="none"/>
               <path d="M126 62 L126 51 M126 62 L136 66 M126 62 L119 70" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
             </g>
             <circle cx="126" cy="62" r="3" fill="currentColor"/>
-            <!-- base -->
             <path d="M40 86 v7 M90 86 v7 M118 80 v13 M134 80 v13" stroke="currentColor" stroke-width="3"/>
             <rect x="18" y="93" width="132" height="7" rx="2.5" fill="currentColor"/>
           </g>
@@ -505,83 +728,96 @@
         <div class="y-axis" data-y></div>
         <div class="plot"><div class="plot-grid"></div><div class="bars" data-bars></div><div class="x-axis" data-x></div></div>
       </div>
-      <div class="legend"><i></i>Bomba ${n}</div>`;
+      <div class="legend"><span><i></i>Bomba ${n}</span></div>`;
   }
 
-  $('tank-inf').innerHTML = tankTemplate('inf', "Caixa D'Água Inferior");
-  $('tank-sup').innerHTML = tankTemplate('sup', "Caixa D'Água Superior");
+  $('tank-inf').innerHTML = tankTemplate('inf');
+  $('tank-sup').innerHTML = tankTemplate('sup');
   $('pump-1').innerHTML = pumpTemplate(1);
   $('pump-2').innerHTML = pumpTemplate(2);
   $('chart-1').innerHTML = chartTemplate(1);
   $('chart-2').innerHTML = chartTemplate(2);
 
-  // ================= Estado da simulação =================
-  const now = new Date();
-  let simTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0, 0);
-  const tanks = {
-    inf: { el: $('tank-inf'), pct: 87, prevPct: 87, trend: 0 },
-    sup: { el: $('tank-sup'), pct: 79, prevPct: 79, trend: 0 },
-  };
+  // ================= Estado =================
+  const today = new Date();
+  let simTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 4, 0, 0);
+  const mkTank = (k, pct) => ({ k, el: $(`tank-${k}`), h: heightForVolume(k, capacity(k) * pct / 100), raw: [], reading: 0, mh: 0, mv: 0, pct, flow: 0, trend: 0, inflow: false, readAcc: 1e9, lastRead: null, lastV: null });
+  const tanks = { inf: mkTank('inf', 72), sup: mkTank('sup', 60) };
   const pumps = [1, 2].map(n => ({
     n, el: $(`pump-${n}`), chart: $(`chart-${n}`), on: false, count: 0, runSec: 0,
     hourly: new Array(24).fill(0), daily: [], countDay: 0, period: 'day',
   }));
-  // histórico fictício das horas anteriores e dos dias anteriores
-  pumps.forEach((p, i) => {
-    for (let h = 0; h < 10; h++) {
-      const busy = (h >= 6 && h <= 9) ? 0.45 : (h < 5 ? 0.05 : 0.2);
-      if ((h + i) % 2 === 0 || Math.random() < 0.3) p.hourly[h] = Math.round(Math.random() * busy * 3600 + busy * 900);
-    }
-    p.runSec = p.hourly.reduce((a, b) => a + b, 0);
-    p.countDay = p.hourly.filter(Boolean).length;
-    p.count = 140 + i * 117 + p.countDay; // acionamentos totais (vida útil)
+  pumps.forEach((p, i) => {   // madrugada fictícia + dias anteriores
+    for (let h = 0; h < 4; h++) if ((h + i) % 2 === 0 || Math.random() < 0.3) { p.hourly[h] = Math.round(300 + Math.random() * 900); p.countDay++; }
     for (let d = 0; d < 30; d++) p.daily.push(Math.round((3 + Math.random() * 4) * 3600));
   });
-  let leadPump = 0, cycleActive = true, running = true, speed = 1;
+  let focus = 'sup', leadPump = 0, cycleActive = false, running = true, speed = 1, warm = true;
+  const history = [];          // {t, inf, sup}
+  let lastHist = 0;
   const events = [];
-  let unread = 0;
+  let unread = 0, evFilter = 'all';
 
-  // ================= Física =================
+  // ================= Simulação =================
   // 1 s real = 2 min simulados (× velocidade). Tick a cada 250 ms.
   const TICK_MS = 250;
-  function step() {
-    const dtMin = (TICK_MS / 1000) * 2 * speed; // minutos simulados (1 s real = 2 min)
+  function step(realMs) {
+    const dtMin = (realMs / 1000) * 2 * speed;
     simTime = new Date(simTime.getTime() + dtMin * 60000);
-    const hour = simTime.getHours();
+    const hour = simTime.getHours() + simTime.getMinutes() / 60;
 
-    // perfil de consumo do prédio ao longo do dia
     const profile = 0.55 + 0.6 * Math.exp(-((hour - 7.5) ** 2) / 4) + 0.5 * Math.exp(-((hour - 19.5) ** 2) / 5);
     const use = val('use') * profile * (0.8 + Math.random() * 0.4);
 
-    const infCap = val('infV'), supCap = val('supV');
-    let infL = tanks.inf.pct / 100 * infCap, supL = tanks.sup.pct / 100 * supCap;
-
     controlPumps();
-    const running = pumps.filter(p => p.on).length;
-    const pumpFlow = running * val('pumpQ');
-    // boia da rua: alimenta a inferior até ~98%
-    const supply = tanks.inf.pct < 98 ? val('infSupply') * (0.85 + Math.random() * 0.3) : 0;
-
+    const pumpFlow = pumps.filter(p => p.on).length * val('pumpQ');
+    const ti = tanks.inf, ts = tanks.sup;
+    const supply = ti.pct < 98 ? val('infSupply') * (0.85 + Math.random() * 0.3) : 0;
+    let infL = volumeAt('inf', ti.h), supL = volumeAt('sup', ts.h);
     const moved = Math.min(pumpFlow * dtMin, infL);
-    infL = Math.min(infCap, infL - moved + supply * dtMin);
-    supL = Math.max(0, Math.min(supCap, supL + moved - use * dtMin));
+    infL = Math.min(capacity('inf'), infL - moved + supply * dtMin);
+    supL = Math.max(0, Math.min(capacity('sup'), supL + moved - use * dtMin));
+    ti.h = heightForVolume('inf', infL); ts.h = heightForVolume('sup', supL);
+    ti.inflow = supply > 0; ts.inflow = pumpFlow > 0;
+    ti.netTrue = supply - pumpFlow; ts.netTrue = pumpFlow - use;
 
-    for (const [k, L, cap] of [['inf', infL, infCap], ['sup', supL, supCap]]) {
-      const t = tanks[k];
-      t.prevPct = t.pct;
-      t.pct = Math.max(0, Math.min(100, L / cap * 100));
-      // tendência suavizada em %/min
-      t.trend = 0.85 * t.trend + 0.15 * ((t.pct - t.prevPct) / dtMin);
+    for (const t of [ti, ts]) {
+      t.readAcc += realMs;
+      if (warm || t.readAcc >= c(t.k, 'period') * 1000) sensorRead(t);
     }
-    tanks.inf.inflow = supply > 0;
-    tanks.sup.inflow = pumpFlow > 0;
 
     pumps.forEach(p => {
       if (!p.on) return;
-      const s = dtMin * 60;
+      const s = dtMin * 60, hr = simTime.getHours();
       p.runSec += s;
-      p.hourly[hour] = Math.min(3600, p.hourly[hour] + s);
+      p.hourly[hr] = Math.min(3600, p.hourly[hr] + s);
     });
+
+    if (simTime.getTime() - lastHist >= 2 * 60000) {
+      history.push({ t: simTime.getTime(), inf: ti.pct, sup: ts.pct });
+      lastHist = simTime.getTime();
+      while (history.length && history[0].t < simTime.getTime() - 12 * 3600000) history.shift();
+    }
+  }
+
+  // Leitura do sensor SmartG: ruído → filtro média móvel → altura → volume → %
+  function sensorRead(t) {
+    const k = t.k;
+    const noise = c(k, 'stype') === 'ultra' ? 0.6 * (Math.random() * 2 - 1) : 0.003 * (Math.random() * 2 - 1);
+    t.raw.push(readingFromH(k, t.h) + noise);
+    t.raw = t.raw.slice(-Math.max(1, Math.round(c(k, 'win'))));
+    t.reading = t.raw.reduce((a, b) => a + b, 0) / t.raw.length;
+    t.mh = hFromReading(k, t.reading);
+    t.mv = volumeAt(k, t.mh);
+    const cap = capacity(k);
+    t.pct = cap > 0 ? t.mv / cap * 100 : 0;
+    const now = simTime.getTime();
+    if (t.lastV !== null && now > t.lastRead) {
+      const dMin = (now - t.lastRead) / 60000;
+      t.flow = 0.7 * t.flow + 0.3 * ((t.mv - t.lastV) / dMin);
+    }
+    t.trend = cap > 0 ? t.flow / cap * 100 : 0;   // %/min
+    t.lastV = t.mv; t.lastRead = now; t.readAcc = 0;
+    t.readStamp = new Date(simTime);
   }
 
   function controlPumps() {
@@ -599,80 +835,78 @@
     pumps.forEach((p, i) => {
       const mode = $(`mode${p.n}`).value;
       let want = mode === 'on' ? true : mode === 'off' ? false : (cycleActive && i === leadPump);
-      if (dry || sup >= 99.5) want = false;
+      if (dry || sup >= Math.max(99.5, c('sup', 'high'))) want = false;
       if (want !== p.on) {
         p.on = want;
         if (want) { p.count++; p.countDay++; }
-        logEvent(`Bomba ${p.n} ${want ? 'ligada' : 'desligada'}`, want ? 'ok' : 'warn');
+        logEvent(`Bomba ${p.n} ${want ? 'ligada' : 'desligada'} (superior em ${fmt(sup, 0)}%)`, want ? 'ok' : 'warn');
       }
     });
   }
 
-  // ================= Alarmes =================
+  // ================= Alarmes / eventos =================
   const lastLevel = { inf: 'ok', sup: 'ok' };
-  function levelState(pct) {
-    if (pct < 15) return ['danger', 'Crítico'];
-    if (pct < 30) return ['warn', 'Baixo'];
-    if (pct > 99) return ['warn', 'Cheio'];
+  function levelState(k, pct) {
+    if (pct <= c(k, 'crit')) return ['danger', 'Crítico'];
+    if (pct >= c(k, 'high')) return ['danger', 'Transbordo'];
+    if (pct <= c(k, 'low')) return ['warn', 'Baixo'];
     return ['ok', 'Normal'];
   }
   function checkAlarms() {
     for (const k of ['inf', 'sup']) {
-      const [s, label] = levelState(tanks[k].pct);
-      if (s !== lastLevel[k]) {
+      const [s, label] = levelState(k, tanks[k].pct);
+      const key = s + label;
+      if (key !== lastLevel[k]) {
         const name = k === 'inf' ? 'Inferior' : 'Superior';
-        logEvent(`Caixa ${name}: nível ${label.toLowerCase()} (${fmt(tanks[k].pct, 0)}%)`, s);
-        lastLevel[k] = s;
+        logEvent(`Caixa ${name}: nível ${label.toLowerCase()} (${fmt(tanks[k].pct, 1)}%)`, s);
+        lastLevel[k] = key;
       }
     }
   }
   function logEvent(msg, kind) {
     events.unshift({ t: new Date(simTime), msg, kind });
-    if (events.length > 60) events.pop();
+    if (events.length > 80) events.pop();
+    if (warm) return;
     unread++;
     const b = $('bellCount');
     b.textContent = unread > 99 ? '99+' : unread;
     b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump');
-    if ($('drwEvents').classList.contains('open')) renderEvents();
+    renderEvents();
   }
   function renderEvents() {
-    $('events').innerHTML = events.map(e =>
-      `<li class="${e.kind}"><i></i><div>${e.msg}<time>${stamp(e.t)}</time></div></li>`).join('') || '<li><i></i><div>Nenhum evento</div></li>';
+    const li = e => `<li class="${e.kind}"><i></i><div>${e.msg}<time>${stamp(e.t)}</time></div></li>`;
+    const empty = '<li><i></i><div>Nenhum evento</div></li>';
+    $('eventsCard').innerHTML = events.filter(e => evFilter === 'all' || e.kind === evFilter).slice(0, 40).map(li).join('') || empty;
+    if ($('drwEvents').classList.contains('open')) $('events').innerHTML = events.map(li).join('') || empty;
   }
 
   // ================= Renderização =================
   const q = (root, sel) => root.querySelector(sel);
+  const dur = min => (!isFinite(min) || min <= 0) ? '—' : min < 60 ? `${Math.round(min)} min` : min < 2880 ? `${fmt(min / 60, 1)} h` : `${fmt(min / 1440, 1)} dias`;
+  const dirOf = t => t.trend > 0.02 ? 'up' : t.trend < -0.02 ? 'down' : '';
 
   function renderTank(k) {
-    const t = tanks[k], root = t.el, H = val(k === 'inf' ? 'infH' : 'supH'), cap = val(k === 'inf' ? 'infV' : 'supV');
-    const pct = t.pct;
-    // topo da água: corpo de y=40 até 246 (206 px)
+    const t = tanks[k], root = t.el, pct = t.pct, ultra = c(k, 'stype') === 'ultra';
     const y = 206 * (1 - pct / 100);
     q(root, '[data-water]').style.transform = `translateY(${y}px)`;
     q(root, '[data-pct]').textContent = `${Math.round(pct)}%`;
-    q(root, '[data-mca]').textContent = `${fmt(H * pct / 100, 2)} mca`;
+    q(root, '[data-mca]').textContent = `${fmt(t.mh / 100, 2)} mca`;
+    root.querySelectorAll('[data-ultra]').forEach(g => g.style.display = ultra ? '' : 'none');
+    root.querySelectorAll('[data-press]').forEach(g => g.style.display = ultra ? 'none' : '');
+    const beam = q(root, '[data-beam]'); beam.setAttribute('y2', 40 + y - 2);
     const svg = q(root, 'svg');
     svg.classList.toggle('dry', pct < 52);
     svg.classList.toggle('filling', !!t.inflow);
-    const [s, label] = levelState(pct);
+    const [s, label] = levelState(k, pct);
     const badge = q(root, '[data-badge]');
     badge.className = 'badge ' + (s === 'ok' ? '' : s);
     badge.textContent = label;
-    const tr = q(root, '[data-trend]');
-    const dir = t.trend > 0.02 ? 'up' : t.trend < -0.02 ? 'down' : '';
+    const tr = q(root, '[data-trend]'), dir = dirOf(t);
     tr.className = 'trend ' + dir;
-    tr.innerHTML = dir === 'up' ? '<span class="arr">▲</span><span>Enchendo</span>'
-      : dir === 'down' ? '<span class="arr">▼</span><span>Esvaziando</span>'
-      : '<span class="arr">•</span><span>Neutro</span>';
-    const L = pct / 100 * cap;
-    let eta = '';
-    if (dir === 'down') eta = ` · vazia em ~${dur(pct / -t.trend)}`;
-    if (dir === 'up') eta = ` · cheia em ~${dur((100 - pct) / t.trend)}`;
-    q(root, '[data-meta]').textContent = `${fmt(L)} L de ${fmt(cap)} L${eta}`;
-  }
-  function dur(min) {
-    if (!isFinite(min) || min <= 0) return '—';
-    return min < 60 ? `${Math.round(min)} min` : `${fmt(min / 60, 1)} h`;
+    tr.innerHTML = dir === 'up' ? '<span>▲</span><span>Enchendo</span>' : dir === 'down' ? '<span>▼</span><span>Esvaziando</span>' : '<span>•</span><span>Neutro</span>';
+    q(root, '[data-meta]').innerHTML =
+      `${fmt(t.mv)} L de ${fmt(capacity(k))} L<br>Sensor ${ultra ? 'ultrassônico' : 'de pressão'}: ${ultra ? fmt(t.reading, 1) + ' cm' : fmt(t.reading, 3) + ' mca'}`;
+    if (t.readStamp) q(root, '[data-readstamp]').textContent = stamp(t.readStamp);
   }
 
   function renderPump(p) {
@@ -683,13 +917,12 @@
     st.classList.toggle('on', p.on);
     q(root, '[data-count]').textContent = p.countDay;
     q(root, '[data-hours]').textContent = hms(p.runSec);
-    const mode = $(`mode${p.n}`).value;
-    const chip = q(root, '[data-mode]');
+    const mode = $(`mode${p.n}`).value, chip = q(root, '[data-mode]');
     chip.textContent = mode === 'auto' ? 'AUTO' : mode === 'on' ? 'MANUAL · ON' : 'MANUAL · OFF';
     chip.classList.toggle('manual', mode !== 'auto');
   }
 
-  function renderChart(p) {
+  function renderBarChart(p) {
     const root = p.chart, period = p.period, hour = simTime.getHours();
     let data, labels, maxSec, yLabels, liveIdx = -1;
     if (period === 'day') {
@@ -698,20 +931,16 @@
       liveIdx = p.on ? hour : -1;
     } else {
       const n = period === 'week' ? 7 : 30;
-      const today = p.hourly.reduce((a, b) => a + b, 0);
-      data = p.daily.slice(-(n - 1)).concat(today);
+      data = p.daily.slice(-(n - 1)).concat(p.hourly.reduce((a, b) => a + b, 0));
       labels = data.map((_, i) => {
         const d = new Date(simTime); d.setDate(d.getDate() - (n - 1 - i));
         return period === 'week' ? ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d.getDay()] : pad(d.getDate());
       });
-      maxSec = 12 * 3600;
-      yLabels = [['12 h', 0], ['6 h', 50], ['0 h', 100]];
+      maxSec = 12 * 3600; yLabels = [['12 h', 0], ['6 h', 50], ['0 h', 100]];
       liveIdx = p.on ? data.length - 1 : -1;
     }
-    const total = data.reduce((a, b) => a + b, 0);
-    q(root, '[data-total]').textContent = hms(total);
+    q(root, '[data-total]').textContent = hms(data.reduce((a, b) => a + b, 0));
     q(root, '[data-count]').textContent = period === 'day' ? p.countDay : p.countDay + Math.round(data.length * 4.2);
-
     const bars = q(root, '[data-bars]'), xa = q(root, '[data-x]');
     const cols = `repeat(${data.length}, minmax(0, 1fr))`;
     bars.style.gridTemplateColumns = cols; xa.style.gridTemplateColumns = cols;
@@ -731,77 +960,229 @@
     });
   }
 
+  // ----- KPIs, cálculo e calculadora do reservatório em foco -----
+  function renderAnalysis() {
+    const k = focus, t = tanks[k], ultra = c(k, 'stype') === 'ultra', cap = capacity(k), H = usefulH(k);
+    const [s, label] = levelState(k, t.pct);
+    $('kPct').innerHTML = `${fmt(t.pct, 1)}<span class="unit">%</span>`;
+    $('kPctFoot').innerHTML = `<span class="badge ${s === 'ok' ? '' : s}" style="font-size:11px;padding:1px 8px">${label}</span>`;
+    const m = $('kMeter'); m.style.width = `${t.pct}%`;
+    m.style.background = s === 'danger' ? css('--danger') : s === 'warn' ? css('--warn') : css(k === 'inf' ? '--s-inf' : '--s-sup');
+    $('kH').innerHTML = `${fmt(t.mh, 1)}<span class="unit">cm</span>`;
+    $('kRead').textContent = ultra ? `Distância lida: ${fmt(t.reading, 1)} cm` : `Coluna lida: ${fmt(t.reading, 3)} mca`;
+    $('kSensor').textContent = `de ${fmt(H)} cm úteis · ${ultra ? 'ultrassônico' : 'pressão'}`;
+    $('kVol').innerHTML = `${fmt(t.mv)}<span class="unit">L</span>`;
+    $('kCap').textContent = `de ${fmt(cap)} L de capacidade`;
+    $('kFree').textContent = `Espaço livre: ${fmt(cap - t.mv)} L`;
+    const dir = dirOf(t), kf = $('kFlow');
+    kf.className = 'value ' + dir;
+    kf.innerHTML = `${t.flow >= 0 ? '+' : ''}${fmt(t.flow, 1)}<span class="unit">L/min</span>`;
+    $('kEta').textContent = dir === 'down' ? `Esvazia em ~${dur(t.mv / -t.flow)}` : dir === 'up' ? `Enche em ~${dur((cap - t.mv) / t.flow)}` : 'Estável';
+    $('kFlowSrc').textContent = k === 'sup'
+      ? `Entrada: ${pumps.some(p => p.on) ? fmt(pumps.filter(p => p.on).length * val('pumpQ')) + ' L/min (bomba)' : 'bombas paradas'}`
+      : `Entrada da rua: ${t.inflow ? fmt(val('infSupply')) + ' L/min' : 'boia fechada'}`;
+    $('calcName').textContent = NAMES[k];
+    $('manName').textContent = NAMES[k];
+    renderCalc();
+  }
+
+  function renderCalc() {
+    const k = focus, t = tanks[k], ultra = c(k, 'stype') === 'ultra', H = usefulH(k), cap = capacity(k), shape = c(k, 'shape');
+    const hl = s => `<span class="hl">${s}</span>`;
+    let s = ultra
+      ? `h = H − (d − offset)\n  = ${fmt(H, 1)} − (${fmt(t.reading, 1)} − ${fmt(c(k, 'offset'), 1)})\n  = ${hl(fmt(t.mh, 1) + ' cm')}\n`
+      : `h = leitura × 100\n  = ${fmt(t.reading, 3)} mca × 100\n  = ${hl(fmt(t.mh, 1) + ' cm')}\n`;
+    if (shape === 'vcyl') s += `\nV = π · r² · h\n  = π · ${fmt(c(k, 'diam') / 2, 1)}² · ${fmt(t.mh, 1)} / 1000`;
+    else if (shape === 'rect') s += `\nV = C · L · h\n  = ${fmt(c(k, 'len'))} · ${fmt(c(k, 'wid'))} · ${fmt(t.mh, 1)} / 1000`;
+    else s += `\nV = [r²·acos((r−h)/r) − (r−h)·√(2rh−h²)] · C\n  r = ${fmt(c(k, 'diam') / 2, 1)} · C = ${fmt(c(k, 'len'))}`;
+    s += `\n  = ${hl(fmt(t.mv) + ' L')}\n\nNível = V / Vmáx\n  = ${fmt(t.mv)} / ${fmt(cap)}\n  = ${hl(fmt(t.pct, 1) + '%')}\n`;
+    s += `\nFiltro: média das últimas ${Math.round(c(k, 'win'))} leituras`;
+    s += ultra ? `\nLeituras < ${fmt(c(k, 'dead'))} cm (zona morta) são descartadas.` : `\n1 mca ≈ 0,098 bar ≈ 9,81 kPa`;
+    $('calc').innerHTML = s;
+  }
+
+  function renderManual() {
+    const k = focus, ultra = c(k, 'stype') === 'ultra';
+    $('manualLbl').textContent = ultra ? 'Distância medida (cm)' : "Coluna d'água (mca)";
+    const h = hFromReading(k, val('manual')), v = volumeAt(k, h), cap = capacity(k);
+    $('manualOut').innerHTML = `
+      <tr><td>Altura da água</td><td>${fmt(h, 1)} cm</td></tr>
+      <tr><td>Coluna d'água</td><td>${fmt(h / 100, 2)} mca</td></tr>
+      <tr><td>Volume</td><td>${fmt(v)} L</td></tr>
+      <tr><td>Nível</td><td>${fmt(cap ? v / cap * 100 : 0, 1)}%</td></tr>
+      <tr><td>Espaço livre</td><td>${fmt(cap - v)} L</td></tr>`;
+  }
+
+  // ----- Histórico de nível (canvas) -----
+  const line = { el: $('lineChart'), hover: null };
+  function drawLine() {
+    const cv = line.el, box = cv.parentElement;
+    const W = box.clientWidth, H = box.clientHeight, dpr = window.devicePixelRatio || 1;
+    if (!W || !H) return;
+    if (cv.width !== W * dpr || cv.height !== H * dpr) { cv.width = W * dpr; cv.height = H * dpr; }
+    const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+    const P = { l: 42, r: 10, t: 8, b: 22 }, iw = W - P.l - P.r, ih = H - P.t - P.b;
+    const winMs = val('histWin') * 3600000, t1 = simTime.getTime(), t0 = t1 - winMs;
+    const X = t => P.l + iw * (t - t0) / winMs, Y = p => P.t + ih * (1 - p / 100);
+    ctx.font = '11px Inter, system-ui, sans-serif';
+
+    ctx.fillStyle = css('--surface-2'); ctx.fillRect(P.l, P.t, iw, ih);
+    // faixa da bomba (superior)
+    ctx.fillStyle = css('--warn'); ctx.globalAlpha = .1;
+    ctx.fillRect(P.l, Y(val('offAt')), iw, Y(val('onAt')) - Y(val('offAt'))); ctx.globalAlpha = 1;
+    ctx.strokeStyle = css('--grid'); ctx.lineWidth = 1; ctx.fillStyle = css('--muted'); ctx.textAlign = 'right';
+    for (let p = 0; p <= 100; p += 25) {
+      ctx.beginPath(); ctx.moveTo(P.l, Y(p) + .5); ctx.lineTo(W - P.r, Y(p) + .5); ctx.stroke();
+      ctx.fillText(p + '%', P.l - 6, Y(p) + 4);
+    }
+    ctx.textAlign = 'center';
+    const stepH = winMs > 6 * 3600000 ? 2 : 1;
+    const first = new Date(t0); first.setMinutes(0, 0, 0);
+    for (let t = first.getTime() + 3600000; t <= t1; t += 3600000) {
+      const d = new Date(t); if (d.getHours() % stepH) continue;
+      ctx.fillText(hhmm(d), X(t), H - 6);
+    }
+    // limites do reservatório em foco
+    ctx.setLineDash([5, 4]); ctx.strokeStyle = css('--danger'); ctx.globalAlpha = .8;
+    for (const p of [c(focus, 'crit'), c(focus, 'high')]) { ctx.beginPath(); ctx.moveTo(P.l, Y(p)); ctx.lineTo(W - P.r, Y(p)); ctx.stroke(); }
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+
+    const pts = history.filter(d => d.t >= t0);
+    if (pts.length < 2) return;
+    for (const k of ['inf', 'sup']) {
+      const color = css(k === 'inf' ? '--s-inf' : '--s-sup'), isF = k === focus;
+      ctx.beginPath(); pts.forEach((d, i) => i ? ctx.lineTo(X(d.t), Y(d[k])) : ctx.moveTo(X(d.t), Y(d[k])));
+      if (isF) {
+        ctx.save(); ctx.lineTo(X(pts.at(-1).t), Y(0)); ctx.lineTo(X(pts[0].t), Y(0)); ctx.closePath();
+        const g = ctx.createLinearGradient(0, P.t, 0, P.t + ih); g.addColorStop(0, color + '40'); g.addColorStop(1, color + '05');
+        ctx.fillStyle = g; ctx.fill(); ctx.restore();
+        ctx.beginPath(); pts.forEach((d, i) => i ? ctx.lineTo(X(d.t), Y(d[k])) : ctx.moveTo(X(d.t), Y(d[k])));
+      }
+      ctx.strokeStyle = color; ctx.lineWidth = isF ? 2.5 : 1.5; ctx.globalAlpha = isF ? 1 : .55; ctx.lineJoin = 'round'; ctx.stroke(); ctx.globalAlpha = 1;
+      const last = pts.at(-1);
+      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(X(last.t), Y(last[k]), isF ? 4.5 : 3, 0, Math.PI * 2); ctx.fill();
+      if (isF) { ctx.strokeStyle = color; ctx.globalAlpha = .3; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(X(last.t), Y(last[k]), 7 + (Date.now() / 120 % 6), 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1; }
+    }
+    // cursor
+    if (line.hover !== null) {
+      const tx = t0 + (line.hover - P.l) / iw * winMs;
+      let best = pts[0]; for (const d of pts) if (Math.abs(d.t - tx) < Math.abs(best.t - tx)) best = d;
+      const x = X(best.t);
+      ctx.strokeStyle = css('--muted'); ctx.globalAlpha = .6; ctx.beginPath(); ctx.moveTo(x, P.t); ctx.lineTo(x, P.t + ih); ctx.stroke(); ctx.globalAlpha = 1;
+      for (const k of ['inf', 'sup']) { ctx.fillStyle = css('--surface'); ctx.strokeStyle = css(k === 'inf' ? '--s-inf' : '--s-sup'); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, Y(best[k]), 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+      line.hoverPoint = best;
+    } else line.hoverPoint = null;
+  }
+
   function renderStamps() {
     const s = stamp(simTime);
     document.querySelectorAll('[data-stamp]').forEach(e => e.textContent = s);
     document.querySelectorAll('.live').forEach(e => e.classList.toggle('stale', !running));
   }
 
-  function renderCalc() {
-    const lines = ['inf', 'sup'].map(k => {
-      const H = val(k + 'H'), cap = val(k + 'V'), pct = tanks[k].pct, mca = H * pct / 100;
-      return `${k === 'inf' ? 'Inferior' : 'Superior'}\n  leitura = ${fmt(mca, 3)} mca\n  nível   = mca / H = ${fmt(mca, 3)} / ${fmt(H, 2)} = ${fmt(pct, 1)}%\n  volume  = nível × cap = ${fmt(cap * pct / 100)} L`;
-    });
-    $('calc').textContent = lines.join('\n\n') + '\n\n1 mca ≈ 0,098 bar ≈ 9,81 kPa';
+  function updateCfgUI() {
+    for (const k of ['inf', 'sup']) {
+      const shape = c(k, 'shape'), ultra = c(k, 'stype') === 'ultra';
+      const show = (f, on) => { const r = document.querySelector(`#cfg-${k} [data-row="${f}"]`); if (r) r.style.display = on ? '' : 'none'; };
+      show('diam', shape !== 'rect'); show('wid', shape === 'rect'); show('len', shape !== 'vcyl'); show('hgt', shape !== 'hcyl');
+      show('offset', ultra); show('dead', ultra);
+      $(`${k}_cap`).textContent = `Capacidade calculada: ${fmt(capacity(k))} L · altura útil ${fmt(usefulH(k))} cm`;
+      const t = tanks[k];
+      t.h = Math.min(t.h, usefulH(k)); t.raw = []; t.lastV = null; t.flow = 0; sensorRead(t);
+    }
   }
 
   function render() {
     renderTank('inf'); renderTank('sup');
-    pumps.forEach(renderPump); pumps.forEach(renderChart);
-    renderStamps();
-    if ($('drwSettings').classList.contains('open')) renderCalc();
+    pumps.forEach(renderPump); pumps.forEach(renderBarChart);
+    renderAnalysis(); drawLine(); renderStamps();
   }
 
-  // ================= Loop =================
-  let timer;
-  function loop() {
-    if (running) { step(); checkAlarms(); }
-    render();
-  }
-  render();
-  timer = setInterval(loop, TICK_MS);
-  unread = 0; $('bellCount').textContent = '0';
+  // ================= Aquecimento: simula das 04:00 às 10:00 =================
+  for (const t of Object.values(tanks)) sensorRead(t);
+  while (simTime.getHours() < 10) { step(TICK_MS * 4); checkAlarms(); }
+  warm = false;
   logEvent('Sensores SmartG conectados', 'ok');
+  unread = 0; $('bellCount').textContent = '';
+  updateCfgUI(); renderManual(); renderEvents(); render();
+
+  setInterval(() => {
+    if (running) { step(TICK_MS); checkAlarms(); }
+    render();
+  }, TICK_MS);
 
   // ================= Interações =================
   pumps.forEach(p => {
-    q(p.chart, '[data-period]').addEventListener('change', e => {
-      p.period = e.target.value; q(p.chart, '[data-bars]').innerHTML = ''; renderChart(p);
-    });
+    q(p.chart, '[data-period]').addEventListener('change', e => { p.period = e.target.value; q(p.chart, '[data-bars]').innerHTML = ''; renderBarChart(p); });
     q(p.el, '[data-mode]').addEventListener('click', () => {
-      const sel = $(`mode${p.n}`);
-      const order = ['auto', 'on', 'off'];
+      const sel = $(`mode${p.n}`), order = ['auto', 'on', 'off'];
       sel.value = order[(order.indexOf(sel.value) + 1) % 3];
+      saveCfg();
       logEvent(`Bomba ${p.n}: modo ${sel.options[sel.selectedIndex].text.toLowerCase()}`, 'warn');
       render();
     });
   });
 
+  function setFocus(k) {
+    focus = k;
+    document.querySelectorAll('#focusSeg button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+    $('manual').value = tanks[k].reading.toFixed(c(k, 'stype') === 'ultra' ? 1 : 3);
+    renderManual(); render();
+  }
+  $('focusSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setFocus(b.dataset.k); });
+  ['inf', 'sup'].forEach(k => tanks[k].el.addEventListener('click', e => { if (!e.target.closest('.more')) setFocus(k); }));
+  tanks.inf.el.style.cursor = tanks.sup.el.style.cursor = 'pointer';
+  $('manual').addEventListener('input', renderManual);
+  $('histWin').addEventListener('change', drawLine);
+  $('evFilter').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    evFilter = b.dataset.f;
+    [...$('evFilter').children].forEach(x => x.classList.toggle('on', x === b));
+    renderEvents();
+  });
+
   const tip = $('tip');
+  const showTip = (html, e) => {
+    tip.innerHTML = html;
+    tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) + 'px';
+    tip.style.top = (e.clientY - tip.offsetHeight - 10) + 'px';
+    tip.style.opacity = 1;
+  };
   document.addEventListener('mousemove', e => {
     const bar = e.target.closest && e.target.closest('.bar-col');
-    if (bar) {
-      tip.textContent = bar.firstChild.dataset.tip;
-      tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) + 'px';
-      tip.style.top = (e.clientY - 34) + 'px';
-      tip.style.opacity = 1;
-    } else tip.style.opacity = 0;
+    if (bar) showTip(bar.firstChild.dataset.tip, e);
+    else if (e.target !== line.el) tip.style.opacity = 0;
   });
+  line.el.addEventListener('mousemove', e => {
+    line.hover = e.offsetX; drawLine();
+    const d = line.hoverPoint;
+    if (d) showTip(`<b>${hhmm(new Date(d.t))}</b><br>Inferior: ${fmt(d.inf, 1)}%<br>Superior: ${fmt(d.sup, 1)}%`, e);
+  });
+  line.el.addEventListener('mouseleave', () => { line.hover = null; tip.style.opacity = 0; drawLine(); });
 
   function openDrawer(id) {
     $('scrim').classList.add('open'); $(id).classList.add('open');
-    if (id === 'drwEvents') { unread = 0; $('bellCount').textContent = '0'; renderEvents(); }
-    if (id === 'drwSettings') renderCalc();
+    if (id === 'drwEvents') { unread = 0; $('bellCount').textContent = ''; renderEvents(); }
   }
   function closeDrawers() { document.querySelectorAll('.drawer.open').forEach(d => d.classList.remove('open')); $('scrim').classList.remove('open'); }
   $('btnBell').addEventListener('click', () => openDrawer('drwEvents'));
   $('btnSettings').addEventListener('click', () => openDrawer('drwSettings'));
-  document.querySelectorAll('.more').forEach(b => b.addEventListener('click', () => openDrawer('drwSettings')));
   $('btnWidget').addEventListener('click', () => openDrawer('drwSettings'));
+  document.querySelectorAll('.more').forEach(b => b.addEventListener('click', () => openDrawer('drwSettings')));
   $('scrim').addEventListener('click', closeDrawers);
   document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeDrawers));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawers(); });
-  document.querySelectorAll('.drawer input, .drawer select').forEach(i => i.addEventListener('input', render));
+  $('cfgSeg').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    [...$('cfgSeg').children].forEach(x => x.classList.toggle('on', x === b));
+    document.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== b.dataset.tab);
+  });
+  cfgInputs().forEach(i => i.addEventListener('input', () => {
+    saveCfg();
+    if (/^(inf|sup)_/.test(i.id)) updateCfgUI();
+    if (i.id === `${focus}_stype` || i.id === `${focus}_shape`) $('manual').value = tanks[focus].reading.toFixed(c(focus, 'stype') === 'ultra' ? 1 : 3);
+    renderManual(); render();
+  }));
 
   $('btnPlay').addEventListener('click', () => {
     running = !running;
@@ -809,23 +1190,19 @@
       ? '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'
       : '<path d="M7 4.5v15l13-7.5z"/>';
     $('btnPlay').title = running ? 'Pausar simulação' : 'Retomar simulação';
-    document.body.style.setProperty('--paused', running ? 'running' : 'paused');
     document.querySelectorAll('svg *').forEach(el => el.style.animationPlayState = running ? '' : 'paused');
     render();
   });
   const speeds = [1, 5, 20];
-  $('btnSpeed').addEventListener('click', () => {
-    speed = speeds[(speeds.indexOf(speed) + 1) % speeds.length];
-    $('btnSpeed').textContent = speed + '×';
-  });
-  $('btnFull').addEventListener('click', () => {
-    if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.();
-  });
+  $('btnSpeed').addEventListener('click', () => { speed = speeds[(speeds.indexOf(speed) + 1) % speeds.length]; $('btnSpeed').textContent = speed + '×'; });
+  $('btnFull').addEventListener('click', () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.(); });
   $('btnTheme').addEventListener('click', () => {
     const r = document.documentElement;
     const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
     r.dataset.theme = dark ? 'light' : 'dark';
+    render();
   });
+  window.addEventListener('resize', drawLine);
 })();
 </script>
 </body>
